@@ -1,0 +1,60 @@
+# Build Folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Logs
+*.log
+logs/
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio
+.vs/
+*.sln.ide
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# DotNet
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework
+Migrations/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Coverage Files
+*.coverage
+coverage/
+
+# Generated Files
+*.generated.cs
+*.g.cs
+
+# Publish Artifacts
+.publish/
+*.publishproj
+
+# General System Files
+.DS_Store
+Thumbs.db
