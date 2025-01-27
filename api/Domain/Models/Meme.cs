@@ -16,18 +16,17 @@ namespace API.Domain.Models
       TextBlocks = new List<TextBlock>();
     }
 
-    public void OnPersist()
-    {
-      // use pareent class onPersist method 
+    // public void OnPersist()
+    // {
+    //   // use pareent class onPersist method
 
 
-    }
+    // }
 
-    public void PreSoftDelete()
-    {
-      // Implementation for soft deleting meme's text blocks
-    }
-
+    // public void PreSoftDelete()
+    // {
+    //   // Implementation for soft deleting meme's text blocks
+    // }
 
   }
 }
