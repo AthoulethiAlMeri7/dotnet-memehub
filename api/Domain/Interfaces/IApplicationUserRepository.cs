@@ -2,14 +2,14 @@ using API.Domain.Models;
 
 namespace API.Domain.Interfaces
 {
-    public interface IApplicationUser<T> where T : class
+    public interface IApplicationUser
     {
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(Guid id);
-        Task<T> AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
-        Task<IEnumerable<T>> GetUserByUserName(string userName);
-        Task<IEnumerable<T>> GetUserByEmail(string email);
+        Task<IEnumerable<ApplicationUser>> GetAllAsync();
+        Task<ApplicationUser?> GetByIdAsync(Guid id);
+        Task<ApplicationUser> AddAsync(ApplicationUser entity);
+        Task<ApplicationUser?> UpdateAsync(ApplicationUser entity);
+        Task DeleteAsync(ApplicationUser entity);
+        Task<IEnumerable<ApplicationUser>> GetUserByUserName(string userName);
+        Task<IEnumerable<ApplicationUser>> GetUserByEmail(string email);
     }
 }

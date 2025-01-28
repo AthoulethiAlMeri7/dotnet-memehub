@@ -2,14 +2,14 @@ using API.Domain.Models;
 
 namespace API.Domain.Interfaces
 {
-    public interface IMemeRepository<T> where T : class
+    public interface IMemeRepository
     {
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(Guid id);
-        Task<T> AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
-        Task<IEnumerable<T>> GetMemesByUser(Guid userId);
-        Task<IEnumerable<T>> GetMemesByDate(DateTime date);
+        Task<IEnumerable<Meme>> GetAllAsync();
+        Task<Meme?> GetByIdAsync(Guid id);
+        Task<Meme> AddAsync(Meme entity);
+        Task<Meme?> UpdateAsync(Meme entity);
+        Task DeleteAsync(Meme entity);
+        Task<IEnumerable<Meme>> GetMemesByUser(Guid userId);
+        Task<IEnumerable<Meme>> GetMemesByDate(DateTime date);
     }
 }

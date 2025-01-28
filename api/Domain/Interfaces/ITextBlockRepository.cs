@@ -2,12 +2,12 @@ using API.Domain.Models;
 
 namespace API.Domain.Interfaces
 {
-    public interface ITextBlockRepository<T> where T : class
+    public interface ITextBlockRepository
     {
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(Guid id);
-        Task<T> AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+        Task<IEnumerable<TextBlock>> GetAllAsync();
+        Task<TextBlock?> GetByIdAsync(Guid id);
+        Task<TextBlock> AddAsync(TextBlock entity);
+        Task<TextBlock?> UpdateAsync(TextBlock entity);
+        Task DeleteAsync(TextBlock entity);
     }
 }

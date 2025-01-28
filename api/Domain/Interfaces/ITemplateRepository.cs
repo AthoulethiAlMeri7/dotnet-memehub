@@ -2,12 +2,12 @@ using API.Domain.Models;
 
 namespace API.Domain.Interfaces
 {
-    public interface ITemplateRepository<T> where T : class
+    public interface ITemplateRepository
     {
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(Guid id);
-        Task<T> AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+        Task<IEnumerable<Template>> GetAllAsync();
+        Task<Template?> GetByIdAsync(Guid id);
+        Task<Template> AddAsync(Template entity);
+        Task<Template?> UpdateAsync(Template entity);
+        Task DeleteAsync(Template entity);
     }
 }
