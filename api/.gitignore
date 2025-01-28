@@ -57,3 +57,10 @@ coverage/
 # General System Files
 .DS_Store
 Thumbs.db
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.db
