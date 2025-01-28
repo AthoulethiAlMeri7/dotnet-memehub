@@ -11,6 +11,8 @@ namespace API.Domain.Models
   {
     [Required]
     public DateTime CreatedAt { get; set; }
+
+
     public string? ProfilePic { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
@@ -19,7 +21,7 @@ namespace API.Domain.Models
     public DateTime UpdatedAt { get; set; }
 
     [InverseProperty("User")]
-    public virtual required ICollection<Meme> Memes { get; set; }
+    public virtual ICollection<Meme> Memes { get; set; }
 
     public ApplicationUser()
     {
@@ -41,18 +43,17 @@ namespace API.Domain.Models
     public void PreSoftDelete()
     {
       IsDeleted = true;
-      DeletedAt = DateTime.UtcNow;
+      DeletedAt = DateTime.Now;
     }
-
 
     public void OnUpdate()
     {
-      UpdatedAt = DateTime.UtcNow;
+      UpdatedAt = DateTime.Now;
     }
     public void OnPersist()
     {
-      CreatedAt = DateTime.UtcNow;
-      UpdatedAt = DateTime.UtcNow;
+      CreatedAt = DateTime.Now;
+      UpdatedAt = DateTime.Now;
       if (string.IsNullOrEmpty(ProfilePic))
       {
         ProfilePic = "/Infrastructure/Assets/ProfilePics/default.png";

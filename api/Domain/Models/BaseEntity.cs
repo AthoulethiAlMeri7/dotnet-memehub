@@ -14,21 +14,23 @@ namespace API.Domain.Models
     public void PreSoftDelete()
     {
       IsDeleted = true;
-      DeletedAt = DateTime.UtcNow;
+      DeletedAt = DateTime.Now;
     }
 
     public void OnPersist()
     {
       if (CreatedAt == null)
       {
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTime.Now;
+        Console.WriteLine($"Current Date and Time: {CreatedAt}");
+
       }
-      UpdatedAt = DateTime.UtcNow;
+      UpdatedAt = DateTime.Now;
     }
 
     public void OnUpdate()
     {
-      UpdatedAt = DateTime.UtcNow;
+      UpdatedAt = DateTime.Now;
     }
   }
 }

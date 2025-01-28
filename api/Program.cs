@@ -1,56 +1,86 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 using API.Domain.Models;
 using API.Infrastructure.Persistence.DbContext;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using api.Infrastructure.Config;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Ajouter la connexion à la base de données (db context de l'application)
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Configurer ASP.NET Identity (user de l'application)
-builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+    {
+        // Configure password options
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 6; // Set your desired minimum length
+        options.Password.RequiredUniqueChars = 1;
+    }
+)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Ajouter Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Ajouter AutoMapper
-// builder.Services.AddAutoMapper(typeof(Program));
+// Add JWT authentication
+var jwtSection = builder.Configuration.GetSection("JWTBearerTokenSettings");
+builder.Services.Configure<JWTBearerTokenSettings>(jwtSection);
 
+var jwtBearerTokenSettings = jwtSection.Get<JWTBearerTokenSettings>();
 
-builder.Services.AddControllers();
+if (jwtBearerTokenSettings == null || string.IsNullOrEmpty(jwtBearerTokenSettings.SecretKey))
+{
+    throw new InvalidOperationException("SecretKey is not configured properly.");
+}
+
+var key = Encoding.ASCII.GetBytes(jwtBearerTokenSettings.SecretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = jwtBearerTokenSettings.Issuer,
+        ValidateAudience = true,
+        ValidAudience = jwtBearerTokenSettings.Audience,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Ajouter la configuration de l'authentification (JWT Bearer)
-// builder.Services.AddAuthentication(options =>
-// {
-//     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-// }).AddJwtBearer(options =>
-// {
-//     options.RequireHttpsMetadata = false;
-//     options.SaveToken = true;
-//     options.TokenValidationParameters = new TokenValidationParameters
-//     {
-//         ValidateIssuerSigningKey = true,
-//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKeyHere")),
-//         ValidateIssuer = false,
-//         ValidateAudience = false
-//     };
-// });
-
+app.UseHttpsRedirection();
+app.UseStaticFiles(); // Enable serving static files
 
 app.UseAuthentication();
 app.UseAuthorization();
