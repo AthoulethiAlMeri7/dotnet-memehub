@@ -1,5 +1,3 @@
-using System;
-
 namespace API.Domain.Models
 {
   public abstract class BaseEntity

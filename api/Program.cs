@@ -1,17 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Text;
 using API.Domain.Models;
 using API.Infrastructure.Persistence.DbContext;
 using Microsoft.EntityFrameworkCore;
 using api.Infrastructure.Config;
 using Microsoft.AspNetCore.Identity;
+using API.Domain.Interfaces;
+using API.Infrastructure.Persistence.Repositories;
+using api.Infrastructure.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +33,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register the Generic Repository
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
+
 
 // Add JWT authentication
 var jwtSection = builder.Configuration.GetSection("JWTBearerTokenSettings");
