@@ -1,4 +1,4 @@
-using API.Domain.Models;
+using System.Linq.Expressions;
 
 namespace API.Domain.Interfaces
 {
@@ -7,7 +7,8 @@ namespace API.Domain.Interfaces
         Task<IEnumerable<T>> GetAllAsync();
         Task<T?> GetByIdAsync(Guid id);
         Task<T> AddAsync(T entity);
-        Task UpdateAsync(T entity);
+        Task<T?> UpdateAsync(T entity);
         Task DeleteAsync(T entity);
+        Task<T?> GetByAsync(Expression<Func<T, bool>> predicate);
     }
 }

@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using API.Domain.Interfaces;
-using API.Domain.Models;
 using API.Infrastructure.Persistence.DbContext;
 
 
@@ -37,10 +36,11 @@ namespace API.Infrastructure.Persistence.Repositories
             return entity;
         }
 
-        public async Task UpdateAsync(T entity)
+        public async Task<T?> UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
             await _dbContext.SaveChangesAsync();
+            return entity;
         }
 
         public async Task DeleteAsync(T entity)
@@ -52,6 +52,11 @@ namespace API.Infrastructure.Persistence.Repositories
         public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.AnyAsync(predicate);
+        }
+
+        public async Task<T?> GetByAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
         }
 
     }
