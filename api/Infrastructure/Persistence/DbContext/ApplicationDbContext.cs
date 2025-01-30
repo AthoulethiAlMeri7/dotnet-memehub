@@ -2,6 +2,7 @@ using API.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using api.Domain.Models;
 
 namespace API.Infrastructure.Persistence.DbContext
 {
@@ -15,6 +16,7 @@ namespace API.Infrastructure.Persistence.DbContext
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     public DbSet<Template> Templates { get; set; }
     public DbSet<TextBlock> TextBlocks { get; set; }
+    public DbSet<RevokedToken> RevokedTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -37,6 +39,11 @@ namespace API.Infrastructure.Persistence.DbContext
           .WithMany(m => m.TextBlocks)
           .HasForeignKey(tb => tb.MemeId)
           .OnDelete(DeleteBehavior.Cascade);
+
+      builder.Entity<RevokedToken>()
+
+        .HasIndex(rt => rt.Token)
+        .IsUnique();
     }
 
     public override int SaveChanges()

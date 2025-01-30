@@ -1,31 +1,22 @@
 using api.Application.Dtos.AuthDtos;
-using api.Infrastructure.Config;
-using API.Domain.Interfaces;
-using API.Domain.Models;
+using api.Application.Services.ServiceContracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace API.Presentation.Controllers
 {
-
-
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IApplicationUserRepository _applicationUserRepository;
-        private readonly JWTBearerTokenSettings _jwtBearerTokenSettings;
+        private readonly IAuthService _authService;
 
-        public AuthController(IOptions<JWTBearerTokenSettings> jwtTokenOptions, IApplicationUserRepository applicationUserRepository)
+        public AuthController(IAuthService authService)
         {
-            _jwtBearerTokenSettings = jwtTokenOptions.Value;
-            _applicationUserRepository = applicationUserRepository;
-        }
+            _authService = authService;
 
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto userDetails)
@@ -38,60 +29,44 @@ namespace API.Presentation.Controllers
                 });
             }
 
-            var applicationUser = new ApplicationUser
-            {
-                UserName = userDetails.Username,
-                Email = userDetails.Email,
-            };
+            var result = await _authService.RegisterAsync(userDetails);
 
-            var result = await _applicationUserRepository.AddAsync(applicationUser, userDetails.Password);
-
-            if (result.Succeeded)
+            if (result == "User registered successfully.")
             {
-                return Ok("User registered successfully.");
+                return Ok(result);
             }
 
-            return BadRequest(result.Errors);
+            return BadRequest(new { Message = result });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            var user = await _applicationUserRepository.GetByUserNameAsync(model.Username);
-            if (user != null && await _applicationUserRepository.CheckPasswordAsync(user, model.Password))
+            if (!ModelState.IsValid)
             {
-                var token = GenerateToken(user);
-                return Ok(new { token });
+                return BadRequest(ModelState);
             }
-            return Unauthorized();
-        }
 
-        private string GenerateToken(ApplicationUser applicationUser)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_jwtBearerTokenSettings.SecretKey);
-
-            var now = DateTime.UtcNow;
-            var tokenDescriptor = new SecurityTokenDescriptor
+            try
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, applicationUser.UserName.ToString()),
-                    new Claim(ClaimTypes.Email, applicationUser.Email)
-                }),
-                Expires = now.AddSeconds(_jwtBearerTokenSettings.ExpiryTimeInSeconds),
-                NotBefore = now,
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                Audience = _jwtBearerTokenSettings.Audience,
-                Issuer = _jwtBearerTokenSettings.Issuer
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+                var token = await _authService.LoginAsync(model);
+                return Ok(new { Token = token });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var result = await _authService.LogoutAsync(token);
+            return Ok(result);
+        }
+
+
     }
-
-
-
-
 }

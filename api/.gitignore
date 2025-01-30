@@ -33,6 +33,7 @@ artifacts/
 ScaffoldingReadMe.txt
 
 # Entity Framework
+Migrations/
 
 # Rider
 .idea/
