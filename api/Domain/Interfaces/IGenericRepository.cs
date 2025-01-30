@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace API.Domain.Interfaces
 {
     public interface IGenericRepository<T> where T : class
@@ -7,5 +9,6 @@ namespace API.Domain.Interfaces
         Task<T> AddAsync(T entity);
         Task<T?> UpdateAsync(T entity);
         Task DeleteAsync(T entity);
+        Task<T?> GetByAsync(Expression<Func<T, bool>> predicate);
     }
 }

@@ -54,5 +54,10 @@ namespace API.Infrastructure.Persistence.Repositories
             return await _dbSet.AnyAsync(predicate);
         }
 
+        public async Task<T?> GetByAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
     }
 }
