@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using API.Domain.Models;
 
 namespace API.Domain.Interfaces
@@ -9,5 +10,7 @@ namespace API.Domain.Interfaces
         Task<Template> AddAsync(Template entity);
         Task<Template?> UpdateAsync(Template entity);
         Task DeleteAsync(Template entity);
+        Task<bool> ExistsAsync(Guid id);
+        Task<IEnumerable<Template>> GetByFilterAsync(Expression<Func<Template, bool>> filter);
     }
 }

@@ -14,6 +14,7 @@ using api.Application.Services.ServiceContracts;
 using api.Application.Services;
 using System.IdentityModel.Tokens.Jwt;
 using api.Application.Mappers;
+using api.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 builder.Services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
+builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
+builder.Services.AddScoped<ITextBlockRepository, TextBlockRepository>();
+builder.Services.AddScoped<IMemeRepository, MemeRepository>();
 
 
 // Register the Services
@@ -52,6 +56,9 @@ builder.Services.AddScoped<IRevokedTokenService, RevokedTokenService>();
 
 // Register AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Register DbSeeder
+builder.Services.AddTransient<DbSeeder>();
 
 // Add JWT authentication
 var jwtSection = builder.Configuration.GetSection("JWTBearerTokenSettings");
@@ -115,5 +122,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Run the DbSeeder
+using (var scope = app.Services.CreateScope())
+{
+    var dbSeeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    await dbSeeder.SeedAsync();
+}
 
 app.Run();

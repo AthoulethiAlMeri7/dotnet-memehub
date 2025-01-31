@@ -49,6 +49,7 @@ namespace API.Domain.Models
     }
     public void OnPersist()
     {
+      IsDeleted = false;
       CreatedAt = DateTime.Now;
       UpdatedAt = DateTime.Now;
       if (string.IsNullOrEmpty(ProfilePic))

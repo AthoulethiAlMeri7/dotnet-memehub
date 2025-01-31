@@ -24,6 +24,7 @@ namespace API.Domain.Models
 
       }
       UpdatedAt = DateTime.Now;
+      IsDeleted = false;
     }
 
     public void OnUpdate()

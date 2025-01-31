@@ -9,7 +9,7 @@ namespace API.Domain.Interfaces
         Task<Meme> AddAsync(Meme entity);
         Task<Meme?> UpdateAsync(Meme entity);
         Task DeleteAsync(Meme entity);
-        Task<IEnumerable<Meme>> GetMemesByUser(Guid userId);
-        Task<IEnumerable<Meme>> GetMemesByDate(DateTime date);
+        Task<IEnumerable<Meme>> GetByUserAsync(Guid userId);
+        Task<IEnumerable<Meme>> GetByDateAsync(DateTime date);
     }
 }

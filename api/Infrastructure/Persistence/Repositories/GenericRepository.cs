@@ -59,5 +59,11 @@ namespace API.Infrastructure.Persistence.Repositories
             return await _dbSet.FirstOrDefaultAsync(predicate);
         }
 
+        public async Task<IEnumerable<T>> GetByFilterAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
+        }
+
+
     }
 }
