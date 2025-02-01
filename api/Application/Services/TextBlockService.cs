@@ -79,7 +79,7 @@ namespace api.Application.Services
                 var existingTextBlock = await _textBlockRepository.GetByIdAsync(id);
                 if (existingTextBlock == null)
                 {
-                    throw new Exception("Template not found.");
+                    throw new Exception("TextBlock not found.");
                 }
 
                 _mapper.Map(textBlockDto, existingTextBlock);

@@ -54,7 +54,7 @@ builder.Services.AddScoped<IMemeRepository, MemeRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRevokedTokenService, RevokedTokenService>();
 builder.Services.AddScoped<ITextBlockService, TextBlockService>();
-
+builder.Services.AddScoped<ITemplateService, TemplateService>();
 
 // Register AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
