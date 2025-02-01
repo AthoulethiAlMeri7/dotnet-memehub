@@ -1,12 +1,11 @@
-using System.ComponentModel.DataAnnotations;
-
-public class UpdateMemeDto
+namespace api.Application.Dtos
 {
-    [MaxLength(125)]
-    public string? Title { get; set; }
+    public class UpdateMemeDto
+    {
+        public string? Title { get; set; }
 
-    [Url]
-    public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
-    public List<UpdateTextBlockDto>? TextBlocks { get; set; }
+        public List<UpdateTextBlockDto>? TextBlocks { get; set; }
+    }
 }

@@ -1,5 +1,5 @@
 using API.Domain.Models;
-
+using api.Application.Dtos;
 namespace api.Application.Services.ServiceContracts
 {
     public interface IMemeService

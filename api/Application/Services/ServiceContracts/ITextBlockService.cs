@@ -1,3 +1,5 @@
+using api.Application.Dtos;
+
 namespace api.Application.Services.ServiceContracts
 {
     public interface ITextBlockService
