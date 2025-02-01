@@ -15,7 +15,7 @@ namespace api.Application.MappingProfiles
             CreateMap<UpdateTextBlockDto, TextBlock>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Meme, opt => opt.Ignore());
-
+            CreateMap<TextBlock, UpdateTextBlockDto>();
         }
     }
 }

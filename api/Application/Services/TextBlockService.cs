@@ -76,8 +76,14 @@ namespace api.Application.Services
         {
             try
             {
-                var textBlock = _mapper.Map<TextBlock>(textBlockDto);
-                var updatedTextBlock = await _textBlockRepository.UpdateAsync(textBlock);
+                var existingTextBlock = await _textBlockRepository.GetByIdAsync(id);
+                if (existingTextBlock == null)
+                {
+                    throw new Exception("Template not found.");
+                }
+
+                _mapper.Map(textBlockDto, existingTextBlock);
+                var updatedTextBlock = await _textBlockRepository.UpdateAsync(existingTextBlock);
                 return _mapper.Map<UpdateTextBlockDto>(updatedTextBlock);
             }
             catch (Exception ex)
