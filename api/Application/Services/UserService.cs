@@ -1,6 +1,7 @@
 
 using System.Security.Claims;
 using api.Application.Services.ServiceContracts;
+using API.Application.Dtos;
 using API.Domain.Interfaces;
 using API.Domain.Models;
 
@@ -17,7 +18,7 @@ namespace api.Application.Services
             _userRepository = userRepository;
         }
 
-        public async Task<ApplicationUser> GetCurrentUserAsync()
+        public async Task<UserDto> GetCurrentUserAsync()
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -26,7 +27,18 @@ namespace api.Application.Services
                 return null;
             }
 
-            return await _userRepository.GetByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            var response = new UserDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                ProfilePic = user.ProfilePic,
+                Roles = user.Roles
+            };
+            return response;
         }
     }
 }

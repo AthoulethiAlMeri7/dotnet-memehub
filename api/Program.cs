@@ -84,6 +84,8 @@ builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<ITextBlockRepository, TextBlockRepository>();
 builder.Services.AddScoped<IMemeRepository, MemeRepository>();
 
+//Register the HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
 // Register the Services
 builder.Services.AddScoped<IAuthService, AuthService>();
