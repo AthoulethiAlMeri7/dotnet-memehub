@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Domain.Models
 {
@@ -19,6 +20,9 @@ namespace API.Domain.Models
 
     [InverseProperty("User")]
     public virtual ICollection<Meme> Memes { get; set; }
+
+    [NotMapped]
+    public List<string> Roles { get; set; } = new List<string>();
 
     public ApplicationUser()
     {

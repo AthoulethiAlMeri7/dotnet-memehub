@@ -2,11 +2,12 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using API.Domain.Interfaces;
 using API.Infrastructure.Persistence.DbContext;
+using API.Domain.Models;
 
 
 namespace API.Infrastructure.Persistence.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -31,6 +32,7 @@ namespace API.Infrastructure.Persistence.Repositories
 
         public async Task<T> AddAsync(T entity)
         {
+            entity.OnPersist();
             await _dbSet.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             return entity;
@@ -38,6 +40,7 @@ namespace API.Infrastructure.Persistence.Repositories
 
         public async Task<T?> UpdateAsync(T entity)
         {
+            entity.OnUpdate();
             _dbSet.Update(entity);
             await _dbContext.SaveChangesAsync();
             return entity;
@@ -45,7 +48,8 @@ namespace API.Infrastructure.Persistence.Repositories
 
         public async Task DeleteAsync(T entity)
         {
-            _dbSet.Remove(entity);
+            entity.PreSoftDelete();
+            _dbSet.Update(entity);
             await _dbContext.SaveChangesAsync();
         }
 
