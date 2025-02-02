@@ -1,5 +1,6 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
+using API.Application.Dtos;
 using API.Domain.Interfaces;
 using API.Domain.Models;
 using AutoMapper;
@@ -15,12 +16,13 @@ namespace api.Application.Services
             _memeRepository = memeRepository;
             _mapper = mapper;
         }
-        public async Task<CreateMemeDto> CreateMemeAsync(CreateMemeDto createMemeDto)
+        public async Task<CreateMemeDto> CreateMemeAsync(UserDto user, CreateMemeDto createMemeDto)
         {
             try
             {
                 var meme = _mapper.Map<Meme>(createMemeDto);
                 meme.Id = Guid.NewGuid();
+                meme.UserId = user.Id;
                 var createdMeme = await _memeRepository.AddAsync(meme);
                 return _mapper.Map<CreateMemeDto>(createdMeme);
             }

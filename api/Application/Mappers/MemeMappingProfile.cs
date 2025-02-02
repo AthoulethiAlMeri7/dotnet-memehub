@@ -12,8 +12,7 @@ namespace api.Application.MappingProfiles
                 .ForMember(dest => dest.TextBlocks, opt => opt.MapFrom(src => src.TextBlocks));
 
             CreateMap<CreateMemeDto, Meme>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.TextBlocks, opt => opt.MapFrom(src => src.TextBlocks));
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             CreateMap<UpdateMemeDto, Meme>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

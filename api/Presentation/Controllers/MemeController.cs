@@ -1,6 +1,9 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
+using API.Application.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
 
 namespace API.Presentation.Controllers
 {
@@ -9,9 +12,13 @@ namespace API.Presentation.Controllers
     public class MemeController : ControllerBase
     {
         private readonly IMemeService _memeService;
-        public MemeController(IMemeService memeService)
+        private readonly IUserService _userService;
+        private readonly ITextBlockService _textBlockService;
+        public MemeController(IMemeService memeService, IUserService userService, ITextBlockService textBlockService)
         {
             _memeService = memeService;
+            _textBlockService = textBlockService;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -42,12 +49,25 @@ namespace API.Presentation.Controllers
             }
         }
 
+        public async Task<UserDto> getCurrentUser()
+        {
+            var user = await _userService.GetCurrentUserAsync();
+            return user;
+        }
+
         [HttpPost]
-        public async Task<IActionResult> CreateMeme([FromBody] CreateMemeDto memeDto)
+        public async Task<IActionResult> CreateMeme([FromBody] CreateMemeRequestDto memeRequestDto)
         {
             try
             {
-                var createdMeme = await _memeService.CreateMemeAsync(memeDto);
+                var user = await this.getCurrentUser();
+                if (user == null)
+                {
+                    return Unauthorized();
+                }
+                var createdMeme = await _memeService.CreateMemeAsync(user, memeRequestDto.Meme);
+                //lzm lenna kol textblock ncreatih wbaad liste teehom lkol l created nzidhom ll meme created
+                var texBlocks = await _textBlockService.CreateTextBlockAsync(memeRequestDto.TextBlock);
                 return Ok(createdMeme);
             }
             catch (Exception ex)

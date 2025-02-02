@@ -8,6 +8,6 @@ namespace api.Application.Dtos
 
         public Guid TemplateId { get; set; }
 
-        public List<CreateTextBlockDto> TextBlocks { get; set; } = new();
+        // public List<CreateTextBlockDto> TextBlocks { get; set; } = new();
     }
 }
