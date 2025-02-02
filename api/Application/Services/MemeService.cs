@@ -1,34 +1,91 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
+using API.Domain.Interfaces;
 using API.Domain.Models;
+using AutoMapper;
 
 namespace api.Application.Services
 {
     public class MemeService : IMemeService
     {
-        public Task<Meme> CreateMemeAsync(CreateMemeDto createMemeDto)
+        private readonly IMemeRepository _memeRepository;
+        private readonly IMapper _mapper;
+        public MemeService(IMemeRepository memeRepository, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _memeRepository = memeRepository;
+            _mapper = mapper;
+        }
+        public async Task<CreateMemeDto> CreateMemeAsync(CreateMemeDto createMemeDto)
+        {
+            try
+            {
+                var meme = _mapper.Map<Meme>(createMemeDto);
+                meme.Id = Guid.NewGuid();
+                var createdMeme = await _memeRepository.AddAsync(meme);
+                return _mapper.Map<CreateMemeDto>(createdMeme);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
-        public Task<Meme> DeleteMemeAsync(Guid id)
+        public async Task DeleteMemeAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var meme = await _memeRepository.GetByIdAsync(id) ?? throw new Exception("Meme not found");
+                await _memeRepository.DeleteAsync(meme);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
-        public Task<Meme> GetMemeByIdAsync(Guid id)
+        public async Task<MemeDto> GetMemeByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var meme = await _memeRepository.GetByIdAsync(id) ?? throw new Exception("Meme not found");
+                return _mapper.Map<MemeDto>(meme);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
-        public Task<IEnumerable<Meme>> GetMemesAsync()
+        public async Task<IEnumerable<MemeDto>> GetAllMemesAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var memes = await _memeRepository.GetAllAsync();
+                return _mapper.Map<IEnumerable<MemeDto>>(memes);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
-        public Task<Meme> UpdateMemeAsync(Guid id, UpdateMemeDto updateMemeDto)
+        public async Task<UpdateMemeDto> UpdateMemeAsync(Guid id, UpdateMemeDto updateMemeDto)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var existingMeme = await _memeRepository.GetByIdAsync(id);
+                if (existingMeme == null)
+                {
+                    throw new Exception("Meme not found.");
+                }
+                _mapper.Map(updateMemeDto, existingMeme);
+                var updatedMeme = await _memeRepository.UpdateAsync(existingMeme);
+                return _mapper.Map<UpdateMemeDto>(updatedMeme);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }
