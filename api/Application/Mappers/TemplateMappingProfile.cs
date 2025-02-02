@@ -12,7 +12,11 @@ namespace api.Application.MappingProfiles
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Url))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Name));
-            CreateMap<Template, ApiTemplateDto>();
+            CreateMap<Template, ApiTemplateDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.ImageUrl));
+
         }
     }
 }
