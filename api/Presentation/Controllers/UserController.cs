@@ -40,7 +40,7 @@ namespace API.Presentation.Controllers
         }
 
         [HttpGet("{id}/memes")]
-        [Authorize]
+
         public async Task<ActionResult<ApplicationUser>> GetUserByIdWithMemes(Guid id)
         {
             var user = await _userRepository.GetByIdWithMemesAsync(id);

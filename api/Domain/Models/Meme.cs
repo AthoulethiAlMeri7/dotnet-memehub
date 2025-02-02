@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Domain.Models
 {
@@ -13,7 +14,6 @@ namespace API.Domain.Models
     public string? Title { get; set; }
 
     [Required]
-    [Url]
     public required string ImageUrl { get; set; }
 
     [Required]
@@ -23,13 +23,13 @@ namespace API.Domain.Models
     public required Guid TemplateId { get; set; }
 
     [ForeignKey("UserId")]
-    public virtual required ApplicationUser User { get; set; }
+    public virtual ApplicationUser? User { get; set; }
 
     [ForeignKey("TemplateId")]
-    public virtual required Template Template { get; set; }
+    public virtual Template? Template { get; set; }
 
     [InverseProperty("Meme")]
-    public virtual required ICollection<TextBlock> TextBlocks { get; set; }
+    public virtual ICollection<TextBlock> TextBlocks { get; set; }
 
     public Meme()
     {

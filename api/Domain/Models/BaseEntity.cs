@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace API.Domain.Models
 {
+  [NotMapped]
   public abstract class BaseEntity
   {
     public DateTime? CreatedAt { get; set; }
