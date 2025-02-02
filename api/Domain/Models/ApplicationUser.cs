@@ -20,6 +20,9 @@ namespace API.Domain.Models
     [InverseProperty("User")]
     public virtual ICollection<Meme> Memes { get; set; }
 
+    [NotMapped]
+    public List<string> Roles { get; set; } = new List<string>();
+
     public ApplicationUser()
     {
       Memes = new List<Meme>();

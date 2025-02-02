@@ -23,12 +23,16 @@ namespace api.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<TextBlock>> GetAllAsync()
         {
-            return await _dbContext.TextBlocks.Include(t => t.Meme).ToListAsync();
+            return await _dbContext.TextBlocks
+            .Include(t => t.Meme)
+            .ToListAsync();
         }
 
         public async Task<TextBlock?> GetByIdAsync(Guid id)
         {
-            return await _dbContext.TextBlocks.Include(t => t.Meme).FirstOrDefaultAsync(t => t.Id == id);
+            return await _dbContext.TextBlocks
+            .Include(t => t.Meme)
+            .FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<TextBlock> AddAsync(TextBlock textBlock)
