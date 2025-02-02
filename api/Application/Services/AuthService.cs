@@ -50,19 +50,36 @@ namespace api.Application.Services
             throw new Exception("User registration failed.");
         }
 
-        private string GenerateToken(ApplicationUser applicationUser)
+        private async Task<string> GenerateToken(ApplicationUser applicationUser)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtBearerTokenSettings.SecretKey);
+            var now = DateTime.UtcNow;
 
-            var now = DateTime.Now;
+            var user = await _userRepository.GetByUserNameAsync(applicationUser.UserName);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            // Fetch user roles
+            var roles = (await _userRepository.GetByUserNameAsync(user.UserName)).Roles;
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, applicationUser.UserName),
+                new Claim(ClaimTypes.Email, applicationUser.Email)
+            };
+
+            // Add user roles to claims
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, applicationUser.UserName.ToString()),
-                    new Claim(ClaimTypes.Email, applicationUser.Email)
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = now.AddSeconds(_jwtBearerTokenSettings.ExpiryTimeInSeconds),
                 NotBefore = now,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
@@ -77,9 +94,9 @@ namespace api.Application.Services
         public async Task<string> LoginAsync(LoginDto model)
         {
             var user = await _userRepository.GetByUserNameAsync(model.Username);
-            if (user != null && await _userRepository.CheckPasswordAsync(user, model.Password))
+            if (user != null && await _userRepository.CheckPasswordAsync(user, model.Password) && !user.IsDeleted)
             {
-                var token = GenerateToken(user);
+                var token = await GenerateToken(user);
                 return token;
             }
 
