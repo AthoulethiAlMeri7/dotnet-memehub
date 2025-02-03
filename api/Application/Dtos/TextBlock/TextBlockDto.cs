@@ -7,6 +7,6 @@ namespace api.Application.Dtos
         public int X { get; set; }
         public int Y { get; set; }
         public string? FontSize { get; set; }
-        public Guid MemeId { get; set; }
+        public Guid? MemeId { get; set; }
     }
 }

@@ -17,14 +17,14 @@ namespace api.Application.Services
         }
 
 
-        public async Task<CreateTextBlockDto> CreateTextBlockAsync(CreateTextBlockDto textBlockDto)
+        public async Task<TextBlockDto> CreateTextBlockAsync(CreateTextBlockDto textBlockDto)
         {
             try
             {
                 var textBlock = _mapper.Map<TextBlock>(textBlockDto);
                 textBlock.Id = Guid.NewGuid();
                 var createdTextBlock = await _textBlockRepository.AddAsync(textBlock);
-                return _mapper.Map<CreateTextBlockDto>(createdTextBlock);
+                return _mapper.Map<TextBlockDto>(createdTextBlock);
             }
             catch (Exception ex)
             {
@@ -70,6 +70,11 @@ namespace api.Application.Services
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<IEnumerable<TextBlock>> GetTextBlocksByMemeIdAsync(Guid id)
+        {
+            return await _textBlockRepository.GetByFilterAsync(m => m.MemeId == id);
         }
 
         public async Task<UpdateTextBlockDto> UpdateTextBlockAsync(Guid id, UpdateTextBlockDto textBlockDto)

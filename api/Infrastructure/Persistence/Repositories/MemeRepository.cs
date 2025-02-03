@@ -85,7 +85,10 @@ namespace api.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Meme>> GetByFilterAsync(Expression<Func<Meme, bool>> predicate)
         {
-            return await _memeRepository.GetByFilterAsync(predicate);
+            return await _dbContext.Memes
+                .Include(m => m.TextBlocks)
+                .Where(predicate)
+                .ToListAsync(); ;
         }
 
     }

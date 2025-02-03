@@ -1,6 +1,7 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
 using API.Application.Dtos;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
@@ -11,11 +12,13 @@ namespace API.Presentation.Controllers
     [ApiController]
     public class MemeController : ControllerBase
     {
+        private readonly IValidator<CreateMemeDto> _validator;
         private readonly IMemeService _memeService;
         private readonly IUserService _userService;
         private readonly ITextBlockService _textBlockService;
-        public MemeController(IMemeService memeService, IUserService userService, ITextBlockService textBlockService)
+        public MemeController(IValidator<CreateMemeDto> validator, IMemeService memeService, IUserService userService, ITextBlockService textBlockService)
         {
+            _validator = validator;
             _memeService = memeService;
             _textBlockService = textBlockService;
             _userService = userService;
@@ -49,10 +52,27 @@ namespace API.Presentation.Controllers
             }
         }
 
-        public async Task<UserDto> getCurrentUser()
+        private async Task<UserDto> GetCurrentUser()
         {
             var user = await _userService.GetCurrentUserAsync();
             return user;
+        }
+
+        private async Task<List<TextBlockDto>> CreateTextBlocks(List<CreateTextBlockDto> textBlocks, Guid memeId)
+        {
+            var createdTextBlocks = new List<TextBlockDto>();
+
+            foreach (var textBlock in textBlocks)
+            {
+                textBlock.MemeId = memeId;
+                var createdTextBlock = await _textBlockService.CreateTextBlockAsync(textBlock);
+                if (createdTextBlock != null)
+                {
+                    createdTextBlocks.Add(createdTextBlock);
+                }
+            }
+
+            return createdTextBlocks;
         }
 
         [HttpPost]
@@ -60,14 +80,17 @@ namespace API.Presentation.Controllers
         {
             try
             {
-                var user = await this.getCurrentUser();
-                if (user == null)
-                {
-                    return Unauthorized();
-                }
+                var user = await this.GetCurrentUser();
+                if (user == null) return Unauthorized();
+
+                var validationResult = await _validator.ValidateAsync(memeRequestDto.Meme);
+                if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
                 var createdMeme = await _memeService.CreateMemeAsync(user, memeRequestDto.Meme);
-                //lzm lenna kol textblock ncreatih wbaad liste teehom lkol l created nzidhom ll meme created
-                var texBlocks = await _textBlockService.CreateTextBlockAsync(memeRequestDto.TextBlock);
+                if (createdMeme == null || createdMeme.Id == Guid.Empty) return BadRequest(new { message = "Failed to add meme to the database" });
+
+                createdMeme.TextBlocks = await CreateTextBlocks(memeRequestDto.TextBlocks, createdMeme.Id);
+
                 return Ok(createdMeme);
             }
             catch (Exception ex)
@@ -77,11 +100,21 @@ namespace API.Presentation.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMeme(Guid id, [FromBody] UpdateMemeDto memeDto)
+        public async Task<IActionResult> UpdateMeme(Guid id, [FromBody] UpdateMemeRequestDto memeDto)
         {
             try
             {
-                var updatedMeme = await _memeService.UpdateMemeAsync(id, memeDto);
+                var updatedMeme = await _memeService.UpdateMemeAsync(id, memeDto.Meme);
+                var memeTextBlocks = await _textBlockService.GetTextBlocksByMemeIdAsync(id);
+                foreach (var textBlock in memeTextBlocks)
+                {
+                    await _textBlockService.DeleteTextBlockAsync(textBlock.Id);
+                }
+                var newTextBlocks = memeDto.TextBlocks;
+                var memeNewTextBlocks = await CreateTextBlocks(newTextBlocks, id);
+                Console.WriteLine("newTextBlockss", memeNewTextBlocks);
+                updatedMeme.TextBlocks = memeNewTextBlocks;
+
                 return Ok(updatedMeme);
             }
             catch (Exception ex)
@@ -95,8 +128,11 @@ namespace API.Presentation.Controllers
         {
             try
             {
+                var meme = await _memeService.GetMemeByIdAsync(id);
+                if (meme == null) return NotFound(new { message = "Meme not found" });
+
                 await _memeService.DeleteMemeAsync(id);
-                return Ok();
+                return Ok(new { message = "Meme deleted successfully" });
             }
             catch (Exception ex)
             {
