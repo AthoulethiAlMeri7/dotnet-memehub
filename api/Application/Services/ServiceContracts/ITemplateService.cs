@@ -9,5 +9,6 @@ namespace api.Application.Services.ServiceContracts
         Task DeleteTemplateAsync(Guid id);
         Task<ApiTemplateDto> GetTemplateByIdAsync(Guid id);
         Task<IEnumerable<ApiTemplateDto>> GetAllTemplatesAsync();
+        Task<bool> TemplateExists(Guid templateId);
     }
 }

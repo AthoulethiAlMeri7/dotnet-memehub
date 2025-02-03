@@ -70,6 +70,12 @@ namespace api.Application.Services
             }
         }
 
+        public async Task<bool> TemplateExists(Guid templateId)
+        {
+            var template = await _templateRepository.GetByIdAsync(templateId);
+            return template != null;
+        }
+
         public async Task<UpdateTemplateDto> UpdateTemplateAsync(Guid id, UpdateTemplateDto templateDto)
         {
             try

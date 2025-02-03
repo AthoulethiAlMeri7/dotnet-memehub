@@ -17,6 +17,9 @@ using api.Application.Mappers;
 using api.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using api.Application.validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -100,6 +103,9 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Register DbSeeder
 builder.Services.AddTransient<DbSeeder>();
+
+// Register FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<CreateMemeDtoValidator>();
 
 // Add JWT authentication
 var jwtSection = builder.Configuration.GetSection("JWTBearerTokenSettings");
