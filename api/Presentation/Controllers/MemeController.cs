@@ -112,7 +112,6 @@ namespace API.Presentation.Controllers
                 }
                 var newTextBlocks = memeDto.TextBlocks;
                 var memeNewTextBlocks = await CreateTextBlocks(newTextBlocks, id);
-                Console.WriteLine("newTextBlockss", memeNewTextBlocks);
                 updatedMeme.TextBlocks = memeNewTextBlocks;
 
                 return Ok(updatedMeme);

@@ -50,7 +50,7 @@ namespace api.Application.Services
         {
             try
             {
-                var textBlocks = await _textBlockRepository.GetAllAsync();
+                var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.IsDeleted == false);
                 return _mapper.Map<IEnumerable<TextBlockDto>>(textBlocks);
             }
             catch (Exception ex)
@@ -63,8 +63,8 @@ namespace api.Application.Services
         {
             try
             {
-                var textBlock = await _textBlockRepository.GetByIdAsync(id) ?? throw new Exception("TextBlock not found");
-                return _mapper.Map<TextBlockDto>(textBlock);
+                var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.Id == id && t.IsDeleted == false);
+                var textBlock = textBlocks.FirstOrDefault() ?? throw new Exception("TextBlock not found"); return _mapper.Map<TextBlockDto>(textBlock);
             }
             catch (Exception ex)
             {
@@ -74,19 +74,16 @@ namespace api.Application.Services
 
         public async Task<IEnumerable<TextBlock>> GetTextBlocksByMemeIdAsync(Guid id)
         {
-            return await _textBlockRepository.GetByFilterAsync(m => m.MemeId == id);
+            return await _textBlockRepository.GetByFilterAsync(t => t.MemeId == id && t.IsDeleted == false);
         }
 
         public async Task<UpdateTextBlockDto> UpdateTextBlockAsync(Guid id, UpdateTextBlockDto textBlockDto)
         {
             try
             {
-                var existingTextBlock = await _textBlockRepository.GetByIdAsync(id);
-                if (existingTextBlock == null)
-                {
-                    throw new Exception("TextBlock not found.");
-                }
-
+                var existingTextBlocks = await _textBlockRepository.GetByFilterAsync(t => t.Id == id && t.IsDeleted == false);
+                var existingTextBlock = existingTextBlocks.FirstOrDefault();
+                if (existingTextBlock == null) throw new Exception("TextBlock not found.");
                 _mapper.Map(textBlockDto, existingTextBlock);
                 var updatedTextBlock = await _textBlockRepository.UpdateAsync(existingTextBlock);
                 return _mapper.Map<UpdateTextBlockDto>(updatedTextBlock);
