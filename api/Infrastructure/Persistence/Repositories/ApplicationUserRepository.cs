@@ -67,10 +67,11 @@ namespace api.Infrastructure.Persistence.Repositories
             return users;
         }
 
-        public async Task<IdentityResult> AddAsync(ApplicationUser user, string password)
+        public async Task<ApplicationUser> AddAsync(ApplicationUser user, string password)
         {
             user.OnPersist();
-            return await _userManager.CreateAsync(user, password);
+            var result = await _userManager.CreateAsync(user, password);
+            return user;
         }
 
         public async Task<IdentityResult> UpdateAsync(ApplicationUser updatedUser)

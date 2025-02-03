@@ -20,14 +20,16 @@ namespace api.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<CreateUserDto> CreateUserAsync(CreateUserDto createUserDto)
+
+
+        public async Task<UserDto> CreateUserAsync(CreateUserDto createUserDto)
         {
             var user = _mapper.Map<ApplicationUser>(createUserDto);
-            await _userRepository.AddAsync(user,createUserDto.Password);
-            return _mapper.Map<CreateUserDto>(user);
+            var userWithId= await _userRepository.AddAsync(user,createUserDto.Password);
+            return _mapper.Map<UserDto>(userWithDto);
         }
 
-        public async Task<UpdateUserDto> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto)
+        public async Task<IdentityResult> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) throw new Exception("User not found");
@@ -35,15 +37,15 @@ namespace api.Application.Services
             _mapper.Map(updateUserDto, user);
             await _userRepository.UpdateAsync(user);
             
-            return _mapper.Map<UpdateUserDto>(user);
+            return await _userRepository.UpdateAsync(user);
         }
 
-        public async Task DeleteUserAsync(Guid id)
+        public async Task<IdentityResult> DeleteUserAsync(Guid id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) throw new Exception("User not found");
             
-            await _userRepository.DeleteAsync(user);
+            return await _userRepository.DeleteAsync(user);
         }
 
         public async Task<UserDto> GetUserByIdAsync(Guid id)
@@ -64,11 +66,11 @@ namespace api.Application.Services
             return user == null ? null : _mapper.Map<UserDto>(user);
         }
 
-        public async Task AddRoleAsync(Guid id, string role)
+        public async Task<IdentityResult> AddRoleAsync(Guid id, string role)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) throw new Exception("User not found");
-            await _userRepository.AddRoleAsync(user,role);
+            return await _userRepository.AddRoleAsync(user,role);
         }
 
         public async Task<IEnumerable<UserDto>> GetUsersByEmailAsync(string email)

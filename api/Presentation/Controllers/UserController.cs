@@ -6,6 +6,8 @@ using API.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using api.Application.Services.ServiceContracts;
+using api.Application.Dtos.UserDtos;
 
 namespace API.Presentation.Controllers
 {
@@ -13,17 +15,17 @@ namespace API.Presentation.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IApplicationUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public UsersController(IApplicationUserRepository userRepository)
+        public UsersController(IUserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetAllUsers()
         {
-            var users = await _userRepository.GetAllAsync();
+            var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
 
@@ -31,7 +33,7 @@ namespace API.Presentation.Controllers
         [Authorize]
         public async Task<ActionResult<ApplicationUser>> GetUserById(Guid id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -43,7 +45,7 @@ namespace API.Presentation.Controllers
 
         public async Task<ActionResult<ApplicationUser>> GetUserByIdWithMemes(Guid id)
         {
-            var user = await _userRepository.GetByIdWithMemesAsync(id);
+            var user = await _userService.GetUserByIdWithMemesAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -51,28 +53,34 @@ namespace API.Presentation.Controllers
             return Ok(user);
         }
 
+
         [HttpPost]
         [Authorize(Roles = "ROLE_ADMIN")]
-        public async Task<ActionResult> AddUser([FromBody] ApplicationUser user, [FromQuery] string password)
+        public async Task<ActionResult<UserDto>> AddUser([FromBody] CreateUserDto userDto)
         {
-            var result = await _userRepository.AddAsync(user, password);
-            if (result.Succeeded)
+            try
             {
-                return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+                var createdUser = await _userService.CreateUserAsync(userDto);
+                return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
             }
-            return BadRequest(result.Errors);
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_ADMIN")]
-        public async Task<ActionResult> UpdateUser(Guid id, [FromBody] ApplicationUser user)
+        public async Task<ActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto updateUserDto)
         {
-            if (id != user.Id)
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null || id != user.Id)
             {
                 return BadRequest();
             }
 
-            var result = await _userRepository.UpdateAsync(user);
+            var result = await _userService.UpdateUserAsync(id,updateUserDto);
             if (result.Succeeded)
             {
                 return NoContent();
@@ -84,7 +92,7 @@ namespace API.Presentation.Controllers
         [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {
-            var result = await _userRepository.DeleteAsync(id);
+            var result = await _userService.DeleteUserAsync(id);
             if (result.Succeeded)
             {
                 return NoContent();
@@ -96,13 +104,13 @@ namespace API.Presentation.Controllers
         [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<ActionResult> AddRole(Guid id, [FromQuery] string role)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            var result = await _userRepository.AddRoleAsync(user, role);
+            var result = await _userService.AddRoleAsync(id, role);
             if (result.Succeeded)
             {
                 return NoContent();
