@@ -5,7 +5,7 @@ namespace API.Domain.Interfaces
 {
     public interface ITemplateRepository
     {
-        Task<IEnumerable<Template>> GetAllAsync();
+        Task<(IEnumerable<Template> Templates, int TotalCount)> GetAllAsync(int pageNumber, int pageSize);
         Task<Template?> GetByIdAsync(Guid id);
         Task<Template> AddAsync(Template entity);
         Task<Template?> UpdateAsync(Template entity);

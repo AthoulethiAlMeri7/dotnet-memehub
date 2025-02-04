@@ -44,12 +44,18 @@ namespace api.Application.Services
             }
         }
 
-        public async Task<IEnumerable<ApiTemplateDto>> GetAllTemplatesAsync()
+        public async Task<PagedResult<ApiTemplateDto>> GetAllTemplatesAsync(int pageNumber, int pageSize)
         {
             try
             {
-                var templates = await _templateRepository.GetAllAsync();
-                return _mapper.Map<IEnumerable<ApiTemplateDto>>(templates);
+                var (templates, totalCount) = await _templateRepository.GetAllAsync(pageNumber, pageSize);
+                return new PagedResult<ApiTemplateDto>
+                {
+                    Items = _mapper.Map<List<ApiTemplateDto>>(templates),
+                    TotalRecords = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
             }
             catch (Exception ex)
             {
