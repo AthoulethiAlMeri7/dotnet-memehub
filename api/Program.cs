@@ -17,6 +17,9 @@ using api.Application.Mappers;
 using api.Infrastructure.Persistence;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using api.Application.validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -80,16 +83,25 @@ builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<ITextBlockRepository, TextBlockRepository>();
 builder.Services.AddScoped<IMemeRepository, MemeRepository>();
 
+//Register the HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
 // Register the Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRevokedTokenService, RevokedTokenService>();
+builder.Services.AddScoped<ITextBlockService, TextBlockService>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddScoped<IMemeService, MemeService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Register AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Register DbSeeder
 builder.Services.AddTransient<DbSeeder>();
+
+// Register FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<CreateMemeDtoValidator>();
 
 // Add JWT authentication
 var jwtSection = builder.Configuration.GetSection("JWTBearerTokenSettings");

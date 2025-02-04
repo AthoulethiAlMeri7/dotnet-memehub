@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using API.Domain.Models;
 
 namespace API.Domain.Interfaces
@@ -11,5 +12,7 @@ namespace API.Domain.Interfaces
         Task DeleteAsync(Meme entity);
         Task<IEnumerable<Meme>> GetByUserAsync(Guid userId);
         Task<IEnumerable<Meme>> GetByDateAsync(DateTime date);
+        Task<IEnumerable<Meme>> GetByFilterAsync(Expression<Func<Meme, bool>> predicate);
+
     }
 }
