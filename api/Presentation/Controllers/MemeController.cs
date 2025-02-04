@@ -84,7 +84,11 @@ namespace API.Presentation.Controllers
                 if (user == null) return Unauthorized();
 
                 var validationResult = await _validator.ValidateAsync(memeRequestDto.Meme);
-                if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+                if (!validationResult.IsValid)
+                {
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                    return BadRequest(new { Errors = errors });
+                }
 
                 var createdMeme = await _memeService.CreateMemeAsync(user, memeRequestDto.Meme);
                 if (createdMeme == null || createdMeme.Id == Guid.Empty) return BadRequest(new { message = "Failed to add meme to the database" });
