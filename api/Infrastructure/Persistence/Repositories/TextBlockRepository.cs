@@ -31,7 +31,6 @@ namespace api.Infrastructure.Persistence.Repositories
         public async Task<TextBlock?> GetByIdAsync(Guid id)
         {
             return await _dbContext.TextBlocks
-            .Include(t => t.Meme)
             .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -49,6 +48,8 @@ namespace api.Infrastructure.Persistence.Repositories
         {
             await _repository.DeleteAsync(textBlock);
         }
+
+
 
         public async Task<bool> ExistsAsync(Guid id)
         {

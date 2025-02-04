@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Domain.Models
 {
@@ -25,7 +26,8 @@ namespace API.Domain.Models
         public Guid MemeId { get; set; }
 
         [ForeignKey("MemeId")]
-        public virtual required Meme Meme { get; set; }
+        [JsonIgnore]
+        public virtual Meme? Meme { get; set; }
 
         // public void OnPersist()
         // {
