@@ -15,11 +15,11 @@ namespace API.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTemplates()
+        public async Task<IActionResult> GetAllTemplates([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var templates = await _templateService.GetAllTemplatesAsync();
+                var templates = await _templateService.GetAllTemplatesAsync(pageNumber, pageSize);
                 return Ok(templates);
             }
             catch (Exception ex)

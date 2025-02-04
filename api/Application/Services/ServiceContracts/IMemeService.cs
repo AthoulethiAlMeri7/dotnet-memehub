@@ -9,7 +9,7 @@ namespace api.Application.Services.ServiceContracts
         Task<MemeDto> UpdateMemeAsync(Guid id, UpdateMemeDto updateMemeDto);
         Task DeleteMemeAsync(Guid id);
         Task<MemeDto> GetMemeByIdAsync(Guid id);
-        Task<IEnumerable<MemeDto>> GetAllMemesAsync();
-        Task<IEnumerable<MemeDto>> GetMemesByUserIdAsync(Guid userId);
+        Task<PagedResult<MemeDto>> GetAllMemesAsync(int pageNumber, int pageSize);
+        Task<PagedResult<MemeDto>> GetMemesByUserIdAsync(Guid userId, int pageNumber, int pageSize);
     }
 }
