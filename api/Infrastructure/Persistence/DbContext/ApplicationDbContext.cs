@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using api.Domain.Models;
+using System.Linq.Expressions;
 
 namespace API.Infrastructure.Persistence.DbContext
 {
@@ -17,6 +18,14 @@ namespace API.Infrastructure.Persistence.DbContext
     public DbSet<Template> Templates { get; set; }
     public DbSet<TextBlock> TextBlocks { get; set; }
     public DbSet<RevokedToken> RevokedTokens { get; set; }
+
+    private static LambdaExpression ConvertFilterExpression(Type entityType)
+    {
+      var parameter = Expression.Parameter(entityType, "e");
+      var property = Expression.Property(parameter, nameof(BaseEntity.IsDeleted));
+      var condition = Expression.Equal(property, Expression.Constant(false));
+      return Expression.Lambda(condition, parameter);
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -41,9 +50,18 @@ namespace API.Infrastructure.Persistence.DbContext
           .OnDelete(DeleteBehavior.Cascade);
 
       builder.Entity<RevokedToken>()
-
         .HasIndex(rt => rt.Token)
         .IsUnique();
+
+      foreach (var entityType in builder.Model.GetEntityTypes())
+      {
+        if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType) || typeof(ApplicationUser).IsAssignableFrom(entityType.ClrType))
+        {
+          builder.Entity(entityType.ClrType)
+                 .HasQueryFilter(ConvertFilterExpression(entityType.ClrType));
+        }
+      }
+
     }
 
     public override int SaveChanges()
@@ -67,6 +85,28 @@ namespace API.Infrastructure.Persistence.DbContext
       }
 
       return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+      foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+      {
+        if (entry.State == EntityState.Deleted)
+        {
+          entry.State = EntityState.Modified;
+          entry.Entity.PreSoftDelete();
+        }
+        else if (entry.State == EntityState.Added)
+        {
+          entry.Entity.OnPersist();
+        }
+        else if (entry.State == EntityState.Modified)
+        {
+          entry.Entity.OnUpdate();
+        }
+      }
+
+      return base.SaveChangesAsync(cancellationToken);
     }
   }
 }
