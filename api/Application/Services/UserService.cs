@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 using api.Application.Dtos.UserDtos;
 using api.Application.Services.ServiceContracts;
 using api.Infrastructure.Persistence.Repositories;
-using API.Domain.Interfaces;
-using API.Domain.Models;
+using api.Domain.Models;
 using AutoMapper;
 using API.Domain.Models;
 using Microsoft.AspNetCore.Identity;
@@ -55,8 +53,50 @@ namespace api.Application.Services
         public async Task<ReturnedUserDto> CreateUserAsync(CreateUserDto createUserDto)
         {
             var user = _mapper.Map<ApplicationUser>(createUserDto);
+            if (createUserDto.ProfilePicture != null)
+            {
+                user.ProfilePic = await UploadFileAsync(createUserDto.ProfilePicture);
+            }
             var userWithId = await _userRepository.AddAsync(user, createUserDto.Password);
-            return _mapper.Map<UserDto>(userWithDto);
+            await _userRepository.AddRoleAsync(userWithId, "ROLE_USER");
+            return _mapper.Map<ReturnedUserDto>(userWithId);
+        }
+
+        public async Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+        }
+
+        public async Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email)
+        {
+            var users = await _userRepository.GetByEmailAsync(email);
+            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+        }
+
+        public async Task<IEnumerable<ReturnedUserDto>> SearchUsersAsync(string search)
+        {
+            var users = await _userRepository.GetByFilterAsync(u => u.UserName.Contains(search) || u.Email.Contains(search));
+            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+        }
+
+        public async Task<IEnumerable<ReturnedUserDto>> GetUsersByRoleAsync(string role)
+        {
+            var users = await _userRepository.GetByRoleAsync(role);
+            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+        }
+
+        public async Task<ReturnedUserDto?> GetUserByIdAsync(Guid id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            return user == null ? null : _mapper.Map<ReturnedUserDto>(user);
+        }
+
+        public async Task<ReturnedUserDto?> GetUserByUserNameAsync(string userName)
+        {
+            var user = await _userRepository.GetByUserNameAsync(userName);
+            if (user == null) return null;
+            return _mapper.Map<ReturnedUserDto>(user);
         }
 
         public async Task<IdentityResult> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto)
@@ -88,28 +128,7 @@ namespace api.Application.Services
 
         public async Task<IdentityResult> DeleteUserAsync(Guid id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null) throw new Exception("User not found");
-
-            return await _userRepository.DeleteAsync(user);
-        }
-
-        public async Task<UserDto> GetUserByIdAsync(Guid id)
-        {
-            var user = await _userRepository.GetByIdAsync(id);
-            return user == null ? null : _mapper.Map<UserDto>(user);
-        }
-
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
-        {
-            var users = await _userRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<UserDto>>(users);
-        }
-
-        public async Task<UserDto> GetUserByIdWithMemesAsync(Guid id)
-        {
-            var user = await _userRepository.GetUserByIdWithMemesAsync(id);
-            return user == null ? null : _mapper.Map<UserDto>(user);
+            return await _userRepository.DeleteAsync(id);
         }
 
         public async Task<IdentityResult> AddRoleAsync(Guid id, string role)
