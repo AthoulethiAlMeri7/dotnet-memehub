@@ -19,6 +19,7 @@ namespace API.Domain.Models
     public DateTime UpdatedAt { get; set; }
 
     [InverseProperty("User")]
+    [JsonIgnore]
     public virtual ICollection<Meme> Memes { get; set; }
 
     [NotMapped]
