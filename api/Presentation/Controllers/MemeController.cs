@@ -25,11 +25,11 @@ namespace API.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllMemes()
+        public async Task<IActionResult> GetAllMemes([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var memes = await _memeService.GetAllMemesAsync();
+                var memes = await _memeService.GetAllMemesAsync(pageNumber, pageSize);
                 return Ok(memes);
             }
             catch (Exception ex)
@@ -145,12 +145,13 @@ namespace API.Presentation.Controllers
                 return BadRequest(new { ex.Message });
             }
         }
+
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetMemesByUserId(Guid userId)
+        public async Task<IActionResult> GetMemesByUserId(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var memes = await _memeService.GetMemesByUserIdAsync(userId);
+                var memes = await _memeService.GetMemesByUserIdAsync(userId, pageNumber, pageSize);
                 return Ok(memes);
             }
             catch (Exception ex)
@@ -158,6 +159,7 @@ namespace API.Presentation.Controllers
                 return BadRequest(new { ex.Message });
             }
         }
+
 
     }
 }

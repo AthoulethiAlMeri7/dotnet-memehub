@@ -47,17 +47,37 @@ namespace api.Application.Services
             }
         }
 
-        public async Task<IEnumerable<MemeDto>> GetAllMemesAsync()
+        public async Task<PagedResult<MemeDto>> GetAllMemesAsync(int pageNumber, int pageSize)
         {
             try
             {
-                var memes = await _memeRepository.GetAllAsync();
-                return _mapper.Map<IEnumerable<MemeDto>>(memes);
+                var (memes, totalCount) = await _memeRepository.GetAllAsync(pageNumber, pageSize);
+
+                return new PagedResult<MemeDto>
+                {
+                    Items = _mapper.Map<List<MemeDto>>(memes),
+                    TotalRecords = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
+        }
+        public async Task<PagedResult<MemeDto>> GetMemesByUserIdAsync(Guid userId, int pageNumber, int pageSize)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) throw new Exception("User not found.");
+            var (memes, totalCount) = await _memeRepository.GetByUserAsync(userId, pageNumber, pageSize);
+            return new PagedResult<MemeDto>
+            {
+                Items = _mapper.Map<List<MemeDto>>(memes),
+                TotalRecords = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<MemeDto> GetMemeByIdAsync(Guid id)
@@ -70,14 +90,6 @@ namespace api.Application.Services
             {
                 throw new Exception(ex.Message);
             }
-        }
-
-        public async Task<IEnumerable<MemeDto>> GetMemesByUserIdAsync(Guid userId)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null) throw new Exception("User not found.");
-            var memes = await _memeRepository.GetByUserAsync(userId);
-            return _mapper.Map<IEnumerable<MemeDto>>(memes);
         }
 
         public async Task<MemeDto> UpdateMemeAsync(Guid id, UpdateMemeDto updateMemeDto)
