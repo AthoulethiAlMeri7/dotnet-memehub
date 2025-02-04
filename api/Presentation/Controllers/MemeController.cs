@@ -111,7 +111,9 @@ namespace API.Presentation.Controllers
                     await _textBlockService.DeleteTextBlockAsync(textBlock.Id);
                 }
                 var newTextBlocks = memeDto.TextBlocks;
+                var meme = await _memeService.GetMemeByIdAsync(id);
                 var memeNewTextBlocks = await CreateTextBlocks(newTextBlocks, id);
+
                 updatedMeme.TextBlocks = memeNewTextBlocks;
 
                 return Ok(updatedMeme);

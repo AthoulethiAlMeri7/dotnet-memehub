@@ -9,18 +9,23 @@ namespace api.Application.Services
     public class TextBlockService : ITextBlockService
     {
         private readonly ITextBlockRepository _textBlockRepository;
+        private readonly IMemeRepository _memeRepository;
         private readonly IMapper _mapper;
-        public TextBlockService(ITextBlockRepository textBlockRepository, IMapper mapper)
+
+        public TextBlockService(ITextBlockRepository textBlockRepository, IMapper mapper, IMemeRepository memeRepository)
         {
             _textBlockRepository = textBlockRepository;
             _mapper = mapper;
+            _memeRepository = memeRepository;
         }
-
 
         public async Task<TextBlockDto> CreateTextBlockAsync(CreateTextBlockDto textBlockDto)
         {
             try
             {
+                var memes = await _memeRepository.GetByFilterAsync(m => m.Id == textBlockDto.MemeId && m.IsDeleted == false);
+                var meme = memes.FirstOrDefault();
+                if (meme == null) throw new Exception("Meme not found.");
                 var textBlock = _mapper.Map<TextBlock>(textBlockDto);
                 textBlock.Id = Guid.NewGuid();
                 var createdTextBlock = await _textBlockRepository.AddAsync(textBlock);
@@ -72,9 +77,13 @@ namespace api.Application.Services
             }
         }
 
-        public async Task<IEnumerable<TextBlock>> GetTextBlocksByMemeIdAsync(Guid id)
+        public async Task<IEnumerable<TextBlockDto>> GetTextBlocksByMemeIdAsync(Guid id)
         {
-            return await _textBlockRepository.GetByFilterAsync(t => t.MemeId == id && t.IsDeleted == false);
+            var memes = await _memeRepository.GetByFilterAsync(m => m.Id == id && m.IsDeleted == false);
+            var meme = memes.FirstOrDefault();
+            if (meme == null) throw new Exception("Meme not found.");
+            var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.MemeId == id && t.IsDeleted == false);
+            return _mapper.Map<IEnumerable<TextBlockDto>>(textBlocks);
         }
 
         public async Task<UpdateTextBlockDto> UpdateTextBlockAsync(Guid id, UpdateTextBlockDto textBlockDto)

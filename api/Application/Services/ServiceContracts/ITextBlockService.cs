@@ -10,6 +10,6 @@ namespace api.Application.Services.ServiceContracts
         Task DeleteTextBlockAsync(Guid id);
         Task<TextBlockDto> GetTextBlockByIdAsync(Guid id);
         Task<IEnumerable<TextBlockDto>> GetAllTextBlocksAsync();
-        Task<IEnumerable<TextBlock>> GetTextBlocksByMemeIdAsync(Guid id);
+        Task<IEnumerable<TextBlockDto>> GetTextBlocksByMemeIdAsync(Guid id);
     }
 }
