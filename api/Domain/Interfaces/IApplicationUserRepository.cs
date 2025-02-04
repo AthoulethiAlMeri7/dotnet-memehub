@@ -14,11 +14,11 @@ namespace API.Domain.Interfaces
         Task<ApplicationUser?> GetByUserNameAsync(string userName);
         Task<IEnumerable<ApplicationUser>> GetByEmailAsync(string email);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
-        Task<ApplicationUser?> GetByIdWithMemesAsync(Guid id);
-        Task<IEnumerable<ApplicationUser>> GetAllWithMemesAsync();
         Task<ApplicationUser?> GetByAsync(Expression<Func<ApplicationUser, bool>> predicate);
         Task<IEnumerable<ApplicationUser>> GetByFilterAsync(Expression<Func<ApplicationUser, bool>> predicate);
         Task<IdentityResult> AddRoleAsync(ApplicationUser user, string role);
+        Task<IdentityResult> RemoveRoleAsync(ApplicationUser user, string role);
+        Task<IEnumerable<ApplicationUser>> GetByRoleAsync(string role);
 
     }
 }

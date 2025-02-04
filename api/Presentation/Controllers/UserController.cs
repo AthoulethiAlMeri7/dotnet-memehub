@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.Domain.Interfaces;
-using API.Domain.Models;
+using api.Application.Dtos.UserDtos;
+using api.Application.Services.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using api.Application.Services.ServiceContracts;
-using api.Application.Dtos.UserDtos;
 
-namespace API.Presentation.Controllers
+namespace api.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -22,16 +20,22 @@ namespace API.Presentation.Controllers
             _userService = userService;
         }
 
+        [HttpPost]
+        public async Task<ActionResult<ReturnedUserDto>> CreateUser([FromForm] CreateUserDto createUserDto)
+        {
+            var createdUser = await _userService.CreateUserAsync(createUserDto);
+            return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
+        }
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetAllUsers()
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
 
         [HttpGet("{id}")]
-        [Authorize]
-        public async Task<ActionResult<ApplicationUser>> GetUserById(Guid id)
+        public async Task<ActionResult<ReturnedUserDto>> GetUserById(Guid id)
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
@@ -41,81 +45,78 @@ namespace API.Presentation.Controllers
             return Ok(user);
         }
 
-        [HttpGet("{id}/memes")]
-
-        public async Task<ActionResult<ApplicationUser>> GetUserByIdWithMemes(Guid id)
+        [HttpGet("email/{email}")]
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByEmail(string email)
         {
-            var user = await _userService.GetUserByIdWithMemesAsync(id);
+            var users = await _userService.GetUsersByEmailAsync(email);
+            return Ok(users);
+        }
+
+        [HttpGet("role/{role}")]
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByRole(string role)
+        {
+            var users = await _userService.GetUsersByRoleAsync(role);
+            return Ok(users);
+        }
+
+        [HttpGet("search/{search}")]
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
+        {
+            var users = await _userService.SearchUsersAsync(search);
+            return Ok(users);
+        }
+
+        [HttpGet("username/{userName}")]
+        public async Task<ActionResult<ReturnedUserDto>> GetUserByUserName(string userName)
+        {
+            var user = await _userService.GetUserByUserNameAsync(userName);
             if (user == null)
             {
                 return NotFound();
             }
             return Ok(user);
         }
-
-
-        [HttpPost]
-        [Authorize(Roles = "ROLE_ADMIN")]
-        public async Task<ActionResult<UserDto>> AddUser([FromBody] CreateUserDto userDto)
-        {
-            try
-            {
-                var createdUser = await _userService.CreateUserAsync(userDto);
-                return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_ADMIN")]
-        public async Task<ActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto updateUserDto)
+        public async Task<ActionResult<ReturnedUserDto>> UpdateUser(Guid id, [FromForm] UpdateUserDto updateUserDto)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null || id != user.Id)
+            var result = await _userService.UpdateUserAsync(id, updateUserDto);
+            if (!result.Succeeded)
             {
-                return BadRequest();
+                return BadRequest(result.Errors);
             }
-
-            var result = await _userService.UpdateUserAsync(id,updateUserDto);
-            if (result.Succeeded)
-            {
-                return NoContent();
-            }
-            return BadRequest(result.Errors);
+            var updatedUser = await _userService.GetUserByIdAsync(id);
+            return Ok(updatedUser);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {
             var result = await _userService.DeleteUserAsync(id);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                return NoContent();
+                return BadRequest(result.Errors);
             }
-            return BadRequest(result.Errors);
+            return NoContent();
         }
 
-        [HttpPost("{id}/roles")]
-        [Authorize(Roles = "ROLE_ADMIN")]
-        public async Task<ActionResult> AddRole(Guid id, [FromQuery] string role)
+        [HttpPost("{id}/upload-profile-picture")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult<string>> UploadProfilePicture(Guid id, UploadProfilePictureDto uploadProfilePictureDto)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var profilePicUrl = await _userService.UploadProfilePictureAsync(id, uploadProfilePictureDto);
+            return Ok(profilePicUrl);
+        }
 
+        [HttpPost("{id}/add-role")]
+        public async Task<ActionResult> AddRole(Guid id, [FromBody] string role)
+        {
             var result = await _userService.AddRoleAsync(id, role);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                return NoContent();
+                return BadRequest(result.Errors);
             }
-            return BadRequest(result.Errors);
+            return NoContent();
         }
     }
 }

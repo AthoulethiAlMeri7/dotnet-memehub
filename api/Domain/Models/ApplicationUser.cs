@@ -10,7 +10,6 @@ namespace API.Domain.Models
     [Required]
     public DateTime CreatedAt { get; set; }
 
-
     public string? ProfilePic { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }

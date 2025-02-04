@@ -9,14 +9,17 @@ namespace api.Application.Services.ServiceContracts
 {
     public interface IUserService
     {
-        Task<UserDto> CreateUserAsync(CreateUserDto createUserDto);
+        Task<ReturnedUserDto> CreateUserAsync(CreateUserDto createUserDto);
+        Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync();
+        Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email);
+        Task<IEnumerable<ReturnedUserDto>> GetUsersByRoleAsync(string role);
+        Task<IEnumerable<ReturnedUserDto>> SearchUsersAsync(string search);
+        Task<ReturnedUserDto?> GetUserByIdAsync(Guid id);
+        Task<ReturnedUserDto?> GetUserByUserNameAsync(string userName);
         Task<IdentityResult> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto);
-        Task <IdentityResult> DeleteUserAsync(Guid id);
-        Task<UserDto> GetUserByIdAsync(Guid id);
-        Task<IEnumerable<UserDto>> GetAllUsersAsync();
-        Task<UserDto> GetUserByIdWithMemesAsync(Guid id);
+        Task<IdentityResult> DeleteUserAsync(Guid id);
         Task<IdentityResult> AddRoleAsync(Guid id, string role);
-        Task<IEnumerable<UserDto>> GetUsersByEmailAsync(string email);
-
+        Task<IdentityResult> RemoveRoleAsync(Guid id, string role);
+        Task<string> UploadProfilePictureAsync(Guid userId, UploadProfilePictureDto uploadProfilePictureDto);
     }
 }

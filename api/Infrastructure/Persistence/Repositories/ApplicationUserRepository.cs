@@ -37,34 +37,19 @@ namespace api.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
         {
-            var users = await _userManager.Users.ToListAsync();
+            var users = await _userManager.Users
+            .Where(u => u.IsDeleted == false)
+            .ToListAsync();
             await PopulateRolesAsync(users);
             return users;
         }
 
         public async Task<ApplicationUser?> GetByIdAsync(Guid id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.Users
+            .FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted == false);
             await PopulateRolesAsync(user);
             return user;
-        }
-
-        public async Task<ApplicationUser?> GetByIdWithMemesAsync(Guid id)
-        {
-            var users = await _context.Users
-                .Include(u => u.Memes)
-                .FirstOrDefaultAsync(u => u.Id == id);
-            await PopulateRolesAsync(users);
-            return users;
-        }
-
-        public async Task<IEnumerable<ApplicationUser>> GetAllWithMemesAsync()
-        {
-            var users = await _context.Users
-                .Include(u => u.Memes)
-                .ToListAsync();
-            await PopulateRolesAsync(users);
-            return users;
         }
 
         public async Task<ApplicationUser> AddAsync(ApplicationUser user, string password)
@@ -84,7 +69,7 @@ namespace api.Infrastructure.Persistence.Repositories
 
         public async Task<IdentityResult> DeleteAsync(Guid id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted == false);
             if (user != null)
             {
                 user.PreSoftDelete();
@@ -96,14 +81,16 @@ namespace api.Infrastructure.Persistence.Repositories
 
         public async Task<ApplicationUser?> GetByUserNameAsync(string userName)
         {
-            var user = await _userManager.FindByNameAsync(userName);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == userName && u.IsDeleted == false);
             await PopulateRolesAsync(user);
             return user;
         }
 
         public async Task<IEnumerable<ApplicationUser>> GetByEmailAsync(string email)
         {
-            var users = await _userManager.Users.Where(u => u.Email == email).ToListAsync();
+            var users = await _userManager.Users
+            .Where(u => u.Email == email && u.IsDeleted == false)
+            .ToListAsync();
             await PopulateRolesAsync(users);
             return users;
         }
@@ -132,5 +119,18 @@ namespace api.Infrastructure.Persistence.Repositories
         {
             return await _userManager.AddToRoleAsync(user, role);
         }
+
+        public async Task<IdentityResult> RemoveRoleAsync(ApplicationUser user, string role)
+        {
+            return await _userManager.RemoveFromRoleAsync(user, role);
+        }
+
+        public async Task<IEnumerable<ApplicationUser>> GetByRoleAsync(string role)
+        {
+            var users = await _userManager.GetUsersInRoleAsync(role);
+            await PopulateRolesAsync(users);
+            return users;
+        }
+
     }
 }
