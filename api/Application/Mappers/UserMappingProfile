@@ -1,0 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using api.Application.Dtos.AuthDtos;
+using API.Domain.Models;
+using AutoMapper;
+
+namespace api.Application.Mappers
+{
+    public class UserMappingProfile : Profile
+    {
+        public UserMappingProfile()
+        {
+            CreateMap<CreateUserDto, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+                .ForMembre(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+
+            CreateMap<ApplicationUser, UserDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+
+        }
+    }
+}

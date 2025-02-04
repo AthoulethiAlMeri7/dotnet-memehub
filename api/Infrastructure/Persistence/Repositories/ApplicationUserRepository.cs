@@ -56,8 +56,12 @@ namespace api.Infrastructure.Persistence.Repositories
         {
             user.OnPersist();
             var result = await _userManager.CreateAsync(user, password);
+
             return user;
         }
+
+
+        
 
         public async Task<IdentityResult> UpdateAsync(ApplicationUser updatedUser)
         {
