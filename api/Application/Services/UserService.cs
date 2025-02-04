@@ -1,20 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using api.Application.Dtos.UserDtos;
 using api.Application.Services.ServiceContracts;
 using api.Infrastructure.Persistence.Repositories;
-using api.Domain.Models;
+using API.Domain.Interfaces;
+using API.Domain.Models;
 using AutoMapper;
 
 namespace api.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly ApplicationUserRepository _userRepository;
+        private readonly IApplicationUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public UserService(ApplicationUserRepository userRepository, IMapper mapper)
+        public UserService(IApplicationUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -25,7 +27,7 @@ namespace api.Application.Services
         {
             var user = _mapper.Map<ApplicationUser>(createUserDto);
             var userWithId= await _userRepository.AddAsync(user,createUserDto.Password);
-            return _mapper.Map<UserDto>(userWithDto);
+            return _mapper.Map<UserDto>(userWithId);
         }
 
         public async Task<IdentityResult> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto)
@@ -44,7 +46,7 @@ namespace api.Application.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) throw new Exception("User not found");
             
-            return await _userRepository.DeleteAsync(user);
+            return await _userRepository.DeleteAsync(id);
         }
 
         public async Task<UserDto> GetUserByIdAsync(Guid id)
@@ -56,12 +58,13 @@ namespace api.Application.Services
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllAsync();
+            Console.WriteLine(users);
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }        
 
         public async Task<UserDto> GetUserByIdWithMemesAsync(Guid id)
         {
-            var user = await _userRepository.GetUserByIdWithMemesAsync(id);
+            var user = await _userRepository.GetByIdWithMemesAsync(id);
             return user == null ? null : _mapper.Map<UserDto>(user);
         }
 

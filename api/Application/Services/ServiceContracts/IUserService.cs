@@ -11,7 +11,7 @@ namespace api.Application.Services.ServiceContracts
     {
         Task<UserDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IdentityResult> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto);
-        Task <IdentityResult> DeleteUserAsync(Guid id);
+        Task<IdentityResult> DeleteUserAsync(Guid id);
         Task<UserDto> GetUserByIdAsync(Guid id);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<UserDto> GetUserByIdWithMemesAsync(Guid id);
