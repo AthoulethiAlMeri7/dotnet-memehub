@@ -10,5 +10,6 @@ namespace api.Application.Services.ServiceContracts
         Task DeleteMemeAsync(Guid id);
         Task<MemeDto> GetMemeByIdAsync(Guid id);
         Task<IEnumerable<MemeDto>> GetAllMemesAsync();
+        Task<IEnumerable<MemeDto>> GetMemesByUserIdAsync(Guid userId);
     }
 }

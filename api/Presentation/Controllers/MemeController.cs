@@ -99,6 +99,7 @@ namespace API.Presentation.Controllers
             }
         }
 
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMeme(Guid id, [FromBody] UpdateMemeRequestDto memeDto)
         {
@@ -140,5 +141,19 @@ namespace API.Presentation.Controllers
                 return BadRequest(new { ex.Message });
             }
         }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetMemesByUserId(Guid userId)
+        {
+            try
+            {
+                var memes = await _memeService.GetMemesByUserIdAsync(userId);
+                return Ok(memes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+        }
+
     }
 }

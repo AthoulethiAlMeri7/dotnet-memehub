@@ -10,9 +10,11 @@ namespace api.Application.Services
     public class MemeService : IMemeService
     {
         private readonly IMemeRepository _memeRepository;
+        private readonly IApplicationUserRepository _userRepository;
         private readonly IMapper _mapper;
-        public MemeService(IMemeRepository memeRepository, IMapper mapper)
+        public MemeService(IMemeRepository memeRepository, IMapper mapper, IApplicationUserRepository userRepository)
         {
+            _userRepository = userRepository;
             _memeRepository = memeRepository;
             _mapper = mapper;
         }
@@ -69,6 +71,14 @@ namespace api.Application.Services
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<IEnumerable<MemeDto>> GetMemesByUserIdAsync(Guid userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) throw new Exception("User not found.");
+            var memes = await _memeRepository.GetByUserAsync(userId);
+            return _mapper.Map<IEnumerable<MemeDto>>(memes);
         }
 
         public async Task<MemeDto> UpdateMemeAsync(Guid id, UpdateMemeDto updateMemeDto)
