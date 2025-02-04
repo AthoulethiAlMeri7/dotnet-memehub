@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Domain.Models
 {
@@ -16,6 +17,7 @@ namespace API.Domain.Models
         public required string ImageUrl { get; set; }
 
         [InverseProperty("Template")]
+        [JsonIgnore]
         public virtual ICollection<Meme>? Memes { get; set; }
 
         public Template()

@@ -48,9 +48,10 @@ namespace API.Infrastructure.Persistence.Repositories
 
         public async Task DeleteAsync(T entity)
         {
-            entity.PreSoftDelete();
-            _dbSet.Update(entity);
+
+            _dbSet.Remove(entity);
             await _dbContext.SaveChangesAsync();
+
         }
 
         public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
