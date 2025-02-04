@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using api.Application.Dtos.UserDtos;
 using api.Application.Services.ServiceContracts;
-using api.Infrastructure.Repositories;
-using api.Domain.Entities;
+using api.Infrastructure.Persistence.Repositories;
+using api.Domain.Models;
 using AutoMapper;
 
 namespace api.Application.Services
@@ -19,7 +19,6 @@ namespace api.Application.Services
             _userRepository = userRepository;
             _mapper = mapper;
         }
-
 
 
         public async Task<UserDto> CreateUserAsync(CreateUserDto createUserDto)
@@ -58,7 +57,7 @@ namespace api.Application.Services
         {
             var users = await _userRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<UserDto>>(users);
-        }
+        }        
 
         public async Task<UserDto> GetUserByIdWithMemesAsync(Guid id)
         {
