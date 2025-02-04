@@ -23,8 +23,7 @@ namespace api.Application.Services
         {
             try
             {
-                var memes = await _memeRepository.GetByFilterAsync(m => m.Id == textBlockDto.MemeId && m.IsDeleted == false);
-                var meme = memes.FirstOrDefault();
+                var meme = await _memeRepository.GetByIdAsync(textBlockDto.MemeId);
                 if (meme == null) throw new Exception("Meme not found.");
                 var textBlock = _mapper.Map<TextBlock>(textBlockDto);
                 textBlock.Id = Guid.NewGuid();
@@ -55,7 +54,7 @@ namespace api.Application.Services
         {
             try
             {
-                var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.IsDeleted == false);
+                var textBlocks = await _textBlockRepository.GetAllAsync();
                 return _mapper.Map<IEnumerable<TextBlockDto>>(textBlocks);
             }
             catch (Exception ex)
@@ -68,8 +67,7 @@ namespace api.Application.Services
         {
             try
             {
-                var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.Id == id && t.IsDeleted == false);
-                var textBlock = textBlocks.FirstOrDefault() ?? throw new Exception("TextBlock not found"); return _mapper.Map<TextBlockDto>(textBlock);
+                var textBlock = await _textBlockRepository.GetByIdAsync(id) ?? throw new Exception("TextBlock not found"); return _mapper.Map<TextBlockDto>(textBlock);
             }
             catch (Exception ex)
             {
@@ -79,10 +77,9 @@ namespace api.Application.Services
 
         public async Task<IEnumerable<TextBlockDto>> GetTextBlocksByMemeIdAsync(Guid id)
         {
-            var memes = await _memeRepository.GetByFilterAsync(m => m.Id == id && m.IsDeleted == false);
-            var meme = memes.FirstOrDefault();
+            var meme = await _memeRepository.GetByIdAsync(id);
             if (meme == null) throw new Exception("Meme not found.");
-            var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.MemeId == id && t.IsDeleted == false);
+            var textBlocks = await _textBlockRepository.GetByFilterAsync(t => t.MemeId == id);
             return _mapper.Map<IEnumerable<TextBlockDto>>(textBlocks);
         }
 
@@ -90,8 +87,7 @@ namespace api.Application.Services
         {
             try
             {
-                var existingTextBlocks = await _textBlockRepository.GetByFilterAsync(t => t.Id == id && t.IsDeleted == false);
-                var existingTextBlock = existingTextBlocks.FirstOrDefault();
+                var existingTextBlock = await _textBlockRepository.GetByIdAsync(id);
                 if (existingTextBlock == null) throw new Exception("TextBlock not found.");
                 _mapper.Map(textBlockDto, existingTextBlock);
                 var updatedTextBlock = await _textBlockRepository.UpdateAsync(existingTextBlock);

@@ -51,7 +51,7 @@ namespace api.Application.Services
         {
             try
             {
-                var memes = await _memeRepository.GetByFilterAsync(m => !m.IsDeleted);
+                var memes = await _memeRepository.GetAllAsync();
                 return _mapper.Map<IEnumerable<MemeDto>>(memes);
             }
             catch (Exception ex)
@@ -64,8 +64,7 @@ namespace api.Application.Services
         {
             try
             {
-                var memes = await _memeRepository.GetByFilterAsync(m => m.Id == id && m.IsDeleted == false);
-                var meme = memes.FirstOrDefault() ?? throw new Exception("Meme not found"); return _mapper.Map<MemeDto>(meme);
+                var meme = await _memeRepository.GetByIdAsync(id) ?? throw new Exception("Meme not found"); return _mapper.Map<MemeDto>(meme);
             }
             catch (Exception ex)
             {
@@ -85,8 +84,7 @@ namespace api.Application.Services
         {
             try
             {
-                var existingMemes = await _memeRepository.GetByFilterAsync(m => m.Id == id && m.IsDeleted == false);
-                var existingMeme = existingMemes.FirstOrDefault();
+                var existingMeme = await _memeRepository.GetByIdAsync(id);
                 if (existingMeme == null) throw new Exception("Meme not found.");
                 _mapper.Map(updateMemeDto, existingMeme);
                 var updatedMeme = await _memeRepository.UpdateAsync(existingMeme);
