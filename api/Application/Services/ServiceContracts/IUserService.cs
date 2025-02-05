@@ -9,7 +9,7 @@ namespace api.Application.Services.ServiceContracts
 {
     public interface IUserService
     {
-        Task<ReturnedUserDto> GetCurrentUserAsync();
+        Task<ReturnedUserDto?> GetCurrentUserAsync();
         Task<ReturnedUserDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync();
         Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email);
@@ -22,7 +22,7 @@ namespace api.Application.Services.ServiceContracts
         Task<IdentityResult> AddRoleAsync(Guid id, string role);
         Task<IdentityResult> RemoveRoleAsync(Guid id, string role);
         Task<string> UploadProfilePictureAsync(Guid userId, UploadProfilePictureDto uploadProfilePictureDto);
-        Task<IEnumerable<ApplicationUser>> GetAllAdminsAsync();
+        Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync();
         Task<int> GetUsersCountAsync();
         Task<int> GetAdminsCountAsync();
     }
