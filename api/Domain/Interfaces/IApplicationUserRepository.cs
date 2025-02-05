@@ -19,6 +19,10 @@ namespace API.Domain.Interfaces
         Task<IdentityResult> AddRoleAsync(ApplicationUser user, string role);
         Task<IdentityResult> RemoveRoleAsync(ApplicationUser user, string role);
         Task<IEnumerable<ApplicationUser>> GetByRoleAsync(string role);
+        Task<IEnumerable<ApplicationUser>> GetAllAdminsAsync();
+        Task<int> GetUsersCountAsync();
+        Task<int> GetAdminsCountAsync();
+
 
     }
 }

@@ -158,6 +158,7 @@ namespace api.Application.Services
 
             return user.ProfilePic;
         }
+        
 
     }
 }

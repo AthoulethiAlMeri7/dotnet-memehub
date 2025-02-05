@@ -21,5 +21,8 @@ namespace api.Application.Services.ServiceContracts
         Task<IdentityResult> AddRoleAsync(Guid id, string role);
         Task<IdentityResult> RemoveRoleAsync(Guid id, string role);
         Task<string> UploadProfilePictureAsync(Guid userId, UploadProfilePictureDto uploadProfilePictureDto);
+        Task<IEnumerable<ApplicationUser>> GetAllAdminsAsync();
+        Task<int> GetUsersCountAsync();
+        Task<int> GetAdminsCountAsync();
     }
 }
