@@ -21,7 +21,7 @@ using api.Presentation.SwaggerConfig;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Environment.WebRootPath ??= Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
 
 // Add services to the container.
 builder.Services.AddControllers();
