@@ -14,9 +14,6 @@ namespace API.Domain.Models
     public string? Title { get; set; }
 
     [Required]
-    public required string ImageUrl { get; set; }
-
-    [Required]
     public required Guid UserId { get; set; }
 
     [Required]

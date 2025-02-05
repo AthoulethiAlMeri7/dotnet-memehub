@@ -22,9 +22,16 @@ namespace api.Infrastructure.Persistence.Repositories
         }
 
 
-        public async Task<IEnumerable<Template>> GetAllAsync()
+        public async Task<(IEnumerable<Template> Templates, int TotalCount)> GetAllAsync(int pageNumber, int pageSize)
         {
-            return await _dbContext.Templates.Include(t => t.Memes).ToListAsync();
+            var totalCount = await _dbContext.Templates.CountAsync();
+
+            var templates = await _dbContext.Templates
+                .Include(t => t.Memes)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return (templates, totalCount);
         }
 
         public async Task<Template?> GetByIdAsync(Guid id)

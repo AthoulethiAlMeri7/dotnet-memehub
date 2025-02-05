@@ -67,6 +67,7 @@ namespace api.Application.Services
 
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, applicationUser.UserName),
                 new Claim(ClaimTypes.Email, applicationUser.Email)
             };

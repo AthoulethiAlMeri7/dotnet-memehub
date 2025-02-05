@@ -6,21 +6,21 @@ namespace API.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TextBlockController : ControllerBase
+    public class TemplateController : ControllerBase
     {
-        private readonly ITextBlockService _textBlockService;
-        public TextBlockController(ITextBlockService textBlockService)
+        private readonly ITemplateService _templateService;
+        public TemplateController(ITemplateService templateService)
         {
-            _textBlockService = textBlockService;
+            _templateService = templateService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTextBlocks()
+        public async Task<IActionResult> GetAllTemplates([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var textBlocks = await _textBlockService.GetAllTextBlocksAsync();
-                return Ok(textBlocks);
+                var templates = await _templateService.GetAllTemplatesAsync(pageNumber, pageSize);
+                return Ok(templates);
             }
             catch (Exception ex)
             {
@@ -29,12 +29,12 @@ namespace API.Presentation.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTextBlockById(Guid id)
+        public async Task<IActionResult> GetTemplateById(Guid id)
         {
             try
             {
-                var textBlock = await _textBlockService.GetTextBlockByIdAsync(id);
-                return Ok(textBlock);
+                var template = await _templateService.GetTemplateByIdAsync(id);
+                return Ok(template);
             }
             catch (Exception ex)
             {
@@ -43,12 +43,12 @@ namespace API.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTextBlock([FromBody] CreateTextBlockDto textBlockDto)
+        public async Task<IActionResult> CreateTemplate([FromBody] CreateTemplateDto templateDto)
         {
             try
             {
-                var createdTextBlock = await _textBlockService.CreateTextBlockAsync(textBlockDto);
-                return Ok(createdTextBlock);
+                var createdTemplate = await _templateService.CreateTemplateAsync(templateDto);
+                return Ok(createdTemplate);
             }
             catch (Exception ex)
             {
@@ -57,13 +57,12 @@ namespace API.Presentation.Controllers
         }
 
         [HttpPut("{id}")]
-
-        public async Task<IActionResult> UpdateTextBlock(Guid id, [FromBody] UpdateTextBlockDto textBlockDto)
+        public async Task<IActionResult> UpdateTemplate(Guid id, [FromBody] UpdateTemplateDto templateDto)
         {
             try
             {
-                var updatedTextBlock = await _textBlockService.UpdateTextBlockAsync(id, textBlockDto);
-                return Ok(updatedTextBlock);
+                var updatedTemplate = await _templateService.UpdateTemplateAsync(id, templateDto);
+                return Ok(updatedTemplate);
             }
             catch (Exception ex)
             {
@@ -72,11 +71,11 @@ namespace API.Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTextBlock(Guid id)
+        public async Task<IActionResult> DeleteTemplate(Guid id)
         {
             try
             {
-                await _textBlockService.DeleteTextBlockAsync(id);
+                await _templateService.DeleteTemplateAsync(id);
                 return Ok();
             }
             catch (Exception ex)

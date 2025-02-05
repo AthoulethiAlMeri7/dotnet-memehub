@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using API.Domain.Interfaces;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Security.Claims;
 
 namespace api.Application.Services
 {
@@ -19,9 +20,11 @@ namespace api.Application.Services
         private readonly IApplicationUserRepository _userRepository;
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserService(IApplicationUserRepository userRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public UserService(IApplicationUserRepository userRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
+            _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _mapper = mapper;
             _env = webHostEnvironment;
@@ -60,6 +63,29 @@ namespace api.Application.Services
             var userWithId = await _userRepository.AddAsync(user, createUserDto.Password);
             await _userRepository.AddRoleAsync(userWithId, "ROLE_USER");
             return _mapper.Map<ReturnedUserDto>(userWithId);
+        }
+
+        public async Task<ReturnedUserDto?> GetCurrentUserAsync()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return null;
+            }
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            var response = new ReturnedUserDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                ProfilePic = user.ProfilePic,
+                Roles = user.Roles
+            };
+            return response;
         }
 
         public async Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync()
@@ -155,7 +181,7 @@ namespace api.Application.Services
 
             return user.ProfilePic;
         }
-        
+
 
     }
 }

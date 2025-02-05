@@ -21,13 +21,19 @@ namespace api.Infrastructure.Persistence.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Meme>> GetAllAsync()
+        public async Task<(IEnumerable<Meme> Memes, int TotalCount)> GetAllAsync(int pageNumber, int pageSize)
         {
-            return await _dbContext.Memes
+            var totalCount = await _dbContext.Memes.CountAsync();
+
+            var memes = await _dbContext.Memes
             .Include(m => m.User)
             .Include(m => m.Template)
             .Include(m => m.TextBlocks)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+            return (memes, totalCount);
         }
 
         public async Task<Meme?> GetByIdAsync(Guid id)
@@ -63,14 +69,20 @@ namespace api.Infrastructure.Persistence.Repositories
             return await _memeRepository.GetByAsync(predicate);
         }
 
-        public async Task<IEnumerable<Meme>> GetByUserAsync(Guid userId)
+        public async Task<(IEnumerable<Meme> Memes, int TotalCount)> GetByUserAsync(Guid userId, int pageNumber, int pageSize)
         {
-            return await _dbContext.Memes
+            var totalCount = await _dbContext.Memes.CountAsync(m => m.UserId == userId);
+
+            var memes = await _dbContext.Memes
             .Include(m => m.User)
             .Include(m => m.Template)
             .Include(m => m.TextBlocks)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Where(m => m.UserId == userId)
             .ToListAsync();
+
+            return (memes, totalCount);
         }
 
         public async Task<IEnumerable<Meme>> GetByDateAsync(DateTime date)
@@ -85,7 +97,10 @@ namespace api.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Meme>> GetByFilterAsync(Expression<Func<Meme, bool>> predicate)
         {
-            return await _memeRepository.GetByFilterAsync(predicate);
+            return await _dbContext.Memes
+                .Include(m => m.TextBlocks)
+                .Where(predicate)
+                .ToListAsync(); ;
         }
 
     }

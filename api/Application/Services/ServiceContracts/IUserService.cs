@@ -9,6 +9,7 @@ namespace api.Application.Services.ServiceContracts
 {
     public interface IUserService
     {
+        Task<ReturnedUserDto> GetCurrentUserAsync();
         Task<ReturnedUserDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync();
         Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email);
