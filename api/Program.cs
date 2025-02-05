@@ -21,6 +21,7 @@ using api.Application.validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using api.Presentation.SwaggerConfig;
+using api.Application.Interfaces;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -99,6 +100,8 @@ builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IMemeService, MemeService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Register AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -145,11 +148,17 @@ builder.Services.AddAuthentication(options =>
         OnTokenValidated = async context =>
         {
             var tokenRevocationService = context.HttpContext.RequestServices.GetRequiredService<IRevokedTokenService>();
-            var token = context.SecurityToken as JwtSecurityToken;
-            if (token != null && await tokenRevocationService.IsTokenRevokedAsync(token.RawData))
+            var authorizationHeader = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (authorizationHeader != null && authorizationHeader.StartsWith("Bearer "))
             {
-                context.Fail("This token has been revoked.");
+                var tokenString = authorizationHeader.Substring("Bearer ".Length).Trim();
+                if (await tokenRevocationService.IsTokenRevokedAsync(tokenString))
+                {
+                    context.Fail("This token has been revoked.");
+                }
             }
+
+
         }
     };
 });

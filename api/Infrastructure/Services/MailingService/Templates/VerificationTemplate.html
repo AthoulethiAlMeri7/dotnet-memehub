@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { text-align: center; padding: 20px; }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Verify Your Email</h2>
+        <p>Click the button below to verify your email address:</p>
+        <a class="button" href="{{VerificationLink}}">Verify Email</a>
+        <p>If the button does not work, copy and paste the following link into your browser:</p>
+        <p>{{VerificationLink}}</p>
+    </div>
+</body>
+</html>

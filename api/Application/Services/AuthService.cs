@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using api.Application.Dtos.AuthDtos;
+using api.Application.Interfaces;
 using api.Application.Services.ServiceContracts;
 using api.Infrastructure.Config;
 using API.Domain.Interfaces;
@@ -21,17 +22,21 @@ namespace api.Application.Services
         private readonly IApplicationUserRepository _userRepository;
         private readonly IRevokedTokenService _tokenRevocationService;
         private readonly IMapper _mapper;
-
-
+        private readonly IEmailService _emailService;
+        private readonly IWebHostEnvironment _env;
 
         public AuthService(IApplicationUserRepository userRepository, IOptions<JWTBearerTokenSettings> jwtTokenOptions,
             IRevokedTokenService tokenRevocationService,
-            IMapper mapper)
+            IMapper mapper,
+            IEmailService emailService,
+            IWebHostEnvironment webHostEnvironment)
         {
             _jwtBearerTokenSettings = jwtTokenOptions.Value;
             _userRepository = userRepository;
             _tokenRevocationService = tokenRevocationService;
             _mapper = mapper;
+            _emailService = emailService;
+            _env = webHostEnvironment;
 
         }
 
@@ -44,10 +49,18 @@ namespace api.Application.Services
 
             if (result != null)
             {
-                return "User registered successfully.";
+                var verificationUrl = $"http://localhost:5145//api/users/verify-email?userId={user.Id}";
+                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Infrastructure", "Services", "MailingService", "Templates", "VerificationTemplate.html");
+                await _emailService.SendEmailAsync(userDetails.Email, "Email Verification", templatePath, verificationUrl);
+                var token = await LoginAsync(new LoginDto { Username = userDetails.Username, Password = userDetails.Password });
+                if (token != null)
+                {
+                    return token;
+                }
+                return "Registered Successfully ! Please check your mail to start the Meme War !";
             }
 
-            throw new Exception("User registration failed.");
+            else throw new Exception("User registration failed.");
         }
 
         private async Task<string> GenerateToken(ApplicationUser applicationUser)
