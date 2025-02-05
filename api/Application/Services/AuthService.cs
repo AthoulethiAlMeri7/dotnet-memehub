@@ -50,6 +50,7 @@ namespace api.Application.Services
 
                 if (result != null)
                 {
+                    await _userRepository.AddRoleAsync(user, "ROLE_GUEST");
                     var verificationUrl = $"http://localhost:5145/api/users/verify-email?userId={user.Id}";
 
                     var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Infrastructure", "Services", "MailingService", "Templates", "VerificationTemplate.html");

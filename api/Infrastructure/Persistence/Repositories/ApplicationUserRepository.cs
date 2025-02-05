@@ -35,13 +35,16 @@ namespace api.Infrastructure.Persistence.Repositories
             }
         }
 
-        public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
+        public async Task<(IEnumerable<ApplicationUser> Users, int TotalCount)> GetAllAsync(int pageNumber, int pageSize)
         {
+            var totalCount = await _userManager.Users.CountAsync(u => u.IsDeleted == false);
             var users = await _userManager.Users
             .Where(u => u.IsDeleted == false)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
             await PopulateRolesAsync(users);
-            return users;
+            return (users, totalCount);
         }
 
         public async Task<ApplicationUser?> GetByIdAsync(Guid id)
@@ -66,7 +69,7 @@ namespace api.Infrastructure.Persistence.Repositories
         public async Task<IdentityResult> UpdateAsync(ApplicationUser updatedUser)
         {
             updatedUser.OnUpdate();
-            _context.Attach(updatedUser); // Attach the user to the context
+            _context.Attach(updatedUser);
             return await _userManager.UpdateAsync(updatedUser);
 
         }
@@ -111,14 +114,19 @@ namespace api.Infrastructure.Persistence.Repositories
             return user;
         }
 
-        public async Task<IEnumerable<ApplicationUser>> GetByFilterAsync(Expression<Func<ApplicationUser, bool>> predicate)
+        public async Task<(IEnumerable<ApplicationUser> Users, int TotalCount)> GetByFilterAsync(Expression<Func<ApplicationUser, bool>> predicate, int pageNumber, int pageSize)
         {
-            var users = await _userManager.Users.Where(predicate).ToListAsync();
+            var users = await _userManager.Users
+            .Where(predicate)
+            .Where(u => u.IsDeleted == false)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+            int totalCount = await _userManager.Users.CountAsync(predicate);
             await PopulateRolesAsync(users);
-            return users;
+            return (users, totalCount);
         }
 
-        //add role to user
         public async Task<IdentityResult> AddRoleAsync(ApplicationUser user, string role)
         {
             return await _userManager.AddToRoleAsync(user, role);
@@ -129,25 +137,38 @@ namespace api.Infrastructure.Persistence.Repositories
             return await _userManager.RemoveFromRoleAsync(user, role);
         }
 
-        public async Task<IEnumerable<ApplicationUser>> GetByRoleAsync(string role)
+        public async Task<(IEnumerable<ApplicationUser> Users, int TotalCount)> GetByRoleAsync(string role, int pageNumber, int pageSize)
         {
             var users = await _userManager.GetUsersInRoleAsync(role);
-            await PopulateRolesAsync(users);
-            return users;
-        }
-        public async Task<IEnumerable<ApplicationUser>> GetAllAdminsAsync()
-        {
-            var users = await _userManager.GetUsersInRoleAsync("ROLE_ADMIN"); 
-            return users.Where(u => !u.IsDeleted).ToList();
+            var returnedUsers = users.Where(u => !u.IsDeleted)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+            int totalCount = users.Count(u => !u.IsDeleted);
+            await PopulateRolesAsync(returnedUsers);
+            return (returnedUsers, totalCount);
         }
 
-        public async Task<int> GetUsersCountAsync(){
+        public async Task<(IEnumerable<ApplicationUser> Users, int TotalCount)> GetAllAdminsAsync(int pageNumber, int pageSize)
+        {
+            var users = await _userManager.GetUsersInRoleAsync("ROLE_ADMIN");
+            var returnedUsers = users.Where(u => !u.IsDeleted)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+            int totalCount = users.Count(u => !u.IsDeleted);
+            await PopulateRolesAsync(returnedUsers);
+            return (returnedUsers, totalCount);
+        }
+
+        public async Task<int> GetUsersCountAsync()
+        {
             return await _userManager.Users.CountAsync(u => u.IsDeleted == false);
         }
         public async Task<int> GetAdminsCountAsync()
         {
             var admins = await _userManager.GetUsersInRoleAsync("ROLE_ADMIN");
-            return admins.Count(u => !u.IsDeleted); // Count only non-deleted users
+            return admins.Count(u => !u.IsDeleted);
         }
 
         public async Task<IdentityResult> ConfirmEmailAsync(ApplicationUser user, string token)

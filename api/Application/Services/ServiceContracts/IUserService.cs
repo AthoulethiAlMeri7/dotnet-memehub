@@ -4,6 +4,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using api.Application.Dtos.UserDtos;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using api.Application.Dtos;
 
 namespace api.Application.Services.ServiceContracts
 {
@@ -11,10 +13,10 @@ namespace api.Application.Services.ServiceContracts
     {
         Task<ReturnedUserDto?> GetCurrentUserAsync();
         Task<ReturnedUserDto> CreateUserAsync(CreateUserDto createUserDto);
-        Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync();
+        Task<PagedResult<ReturnedUserDto>> GetAllUsersAsync(int pageNumber, int pageSize);
         Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email);
-        Task<IEnumerable<ReturnedUserDto>> GetUsersByRoleAsync(string role);
-        Task<IEnumerable<ReturnedUserDto>> SearchUsersAsync(string search);
+        Task<PagedResult<ReturnedUserDto>> GetUsersByRoleAsync(string role, int pageNumber, int pageSize);
+        Task<PagedResult<ReturnedUserDto>> SearchUsersAsync(string search, int pageNumber, int pageSize);
         Task<ReturnedUserDto?> GetUserByIdAsync(Guid id);
         Task<ReturnedUserDto?> GetUserByUserNameAsync(string userName);
         Task<IdentityResult> UpdateUserAsync(Guid id, UpdateUserDto updateUserDto);
@@ -23,7 +25,7 @@ namespace api.Application.Services.ServiceContracts
         Task<IdentityResult> RemoveRoleAsync(Guid id, string role);
         Task<string> UploadProfilePictureAsync(Guid userId, UploadProfilePictureDto uploadProfilePictureDto);
         Task<IdentityResult> VerifyEmailAsync(Guid userId);
-        Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync();
+        Task<PagedResult<ReturnedUserDto>> GetAllAdminsAsync(int pageNumber, int pageSize);
         Task<int> GetUsersCountAsync();
         Task<int> GetAdminsCountAsync();
     }

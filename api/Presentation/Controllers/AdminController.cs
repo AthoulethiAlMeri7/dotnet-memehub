@@ -10,29 +10,33 @@ namespace api.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="ROLE_ADMIN")]
+    [Authorize(Roles = "ROLE_ADMIN")]
     public class AdminsController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IMemeService _memeService;
 
-        public AdminsController(IUserService userService)
+
+        public AdminsController(IUserService userService, IMemeService memeService)
         {
             _userService = userService;
+            _memeService = memeService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllAdmins()
+        public async Task<ActionResult> GetAllAdmins([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var admins = await _userService.GetAllAdminsAsync();
+            var admins = await _userService.GetAllAdminsAsync(pageNumber, pageSize);
             return Ok(admins);
         }
 
+
         [HttpGet("users")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
+        public async Task<ActionResult> GetAllUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var users = await _userService.GetAllUsersAsync();
+                var users = await _userService.GetAllUsersAsync(pageNumber, pageSize);
                 return Ok(users);
             }
             catch (Exception ex)
@@ -73,12 +77,13 @@ namespace api.Presentation.Controllers
             }
         }
 
+
         [HttpGet("role/{role}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByRole(string role)
+        public async Task<ActionResult> GetUsersByRole(string role, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var users = await _userService.GetUsersByRoleAsync(role);
+                var users = await _userService.GetUsersByRoleAsync(role, pageNumber, pageSize);
                 return Ok(users);
             }
             catch (Exception ex)
@@ -87,19 +92,6 @@ namespace api.Presentation.Controllers
             }
         }
 
-        [HttpGet("search/{search}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
-        {
-            try
-            {
-                var users = await _userService.SearchUsersAsync(search);
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
 
         [HttpGet("username/{userName}")]
         public async Task<ActionResult<ReturnedUserDto>> GetUserByUserName(string userName)
@@ -134,12 +126,25 @@ namespace api.Presentation.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteUser(Guid id)
         {
-            var result = await _userService.DeleteUserAsync(id);
-            if (!result.Succeeded)
+            try
             {
-                return BadRequest(result.Errors);
+                var user = await _userService.DeleteUserAsync(id);
+                if (user == null) return NotFound("User not found");
+
+                var totalPages = (await _memeService.GetMemesByUserIdAsync(id, 1, 1)).TotalRecords;
+                var memes = (await _memeService.GetMemesByUserIdAsync(id, 1, totalPages)).Items;
+
+                foreach (var meme in memes)
+                {
+                    await _memeService.DeleteMemeAsync(meme.Id);
+                }
+
+                return NoContent();
             }
-            return NoContent();
+            catch
+            {
+                return BadRequest("Unable to delete user");
+            }
         }
 
         [HttpPost("{id}/upload-profile-picture")]
@@ -167,6 +172,7 @@ namespace api.Presentation.Controllers
             }
             return NoContent();
         }
+
         [HttpDelete("{id}/remove-role")]
         public async Task<ActionResult> RemoveRole(Guid id, [FromBody] string role)
         {

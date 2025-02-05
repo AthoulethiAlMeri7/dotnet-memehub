@@ -10,7 +10,7 @@ namespace api.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "ROLE_USER,ROLE_ADMIN")]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -18,21 +18,6 @@ namespace api.Presentation.Controllers
         public UsersController(IUserService userService)
         {
             _userService = userService;
-        }
-
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
-        {
-            try
-            {
-                var users = await _userService.GetAllUsersAsync();
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
         }
 
         [HttpGet("{id}")]
@@ -53,13 +38,12 @@ namespace api.Presentation.Controllers
                 return BadRequest(new { Message = ex.Message });
             }
         }
-
         [HttpGet("search/{search}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var users = await _userService.SearchUsersAsync(search);
+                var users = await _userService.SearchUsersAsync(search, pageNumber, pageSize);
                 return Ok(users);
             }
             catch (Exception ex)
@@ -74,24 +58,28 @@ namespace api.Presentation.Controllers
         [HttpPut]
         public async Task<ActionResult<ReturnedUserDto>> UpdateUser([FromForm] UpdateUserDto updateUserDto)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            var result = await _userService.UpdateUserAsync(currentUser.Id, updateUserDto);
+            var user = await _userService.GetCurrentUserAsync();
+            if (user == null) return Unauthorized();
+            var result = await _userService.UpdateUserAsync(user.Id, updateUserDto);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
             }
-            var updatedUser = await _userService.GetUserByIdAsync(currentUser.Id);
+            var updatedUser = await _userService.GetUserByIdAsync(user.Id);
             return Ok(updatedUser);
         }
 
 
-        [HttpPost("{id}/upload-profile-picture")]
+        [HttpPost("upload-profile-picture")]
         [Consumes("multipart/form-data")]
-        public async Task<ActionResult<string>> UploadProfilePicture(Guid id, UploadProfilePictureDto uploadProfilePictureDto)
+        public async Task<ActionResult<string>> UploadProfilePicture(UploadProfilePictureDto uploadProfilePictureDto)
         {
             try
             {
-                var profilePicUrl = await _userService.UploadProfilePictureAsync(id, uploadProfilePictureDto);
+                var user = await _userService.GetCurrentUserAsync();
+                if (user == null) return Unauthorized();
+
+                var profilePicUrl = await _userService.UploadProfilePictureAsync(user.Id, uploadProfilePictureDto);
                 return Ok(profilePicUrl);
             }
             catch (Exception ex)
@@ -104,7 +92,7 @@ namespace api.Presentation.Controllers
         }
 
 
-
+        [Authorize(Roles = "ROLE_GUEST")]
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail(Guid userId)
         {

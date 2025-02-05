@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using api.Application.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using api.Application.Dtos;
 
 namespace api.Application.Services
 {
@@ -95,10 +97,16 @@ namespace api.Application.Services
             return response;
         }
 
-        public async Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync()
+        public async Task<PagedResult<ReturnedUserDto>> GetAllUsersAsync(int pageNumber, int pageSize)
         {
-            var users = await _userRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+            var (users, totalCount) = await _userRepository.GetAllAsync(pageNumber, pageSize);
+            return new PagedResult<ReturnedUserDto>
+            {
+                Items = _mapper.Map<List<ReturnedUserDto>>(users),
+                TotalRecords = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email)
@@ -107,16 +115,28 @@ namespace api.Application.Services
             return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
         }
 
-        public async Task<IEnumerable<ReturnedUserDto>> SearchUsersAsync(string search)
+        public async Task<PagedResult<ReturnedUserDto>> SearchUsersAsync(string search, int pageNumber, int pageSize)
         {
-            var users = await _userRepository.GetByFilterAsync(u => u.UserName.Contains(search) || u.Email.Contains(search));
-            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+            var (users, totalCount) = await _userRepository.GetByFilterAsync(u => u.UserName.Contains(search) || u.Email.Contains(search), pageNumber, pageSize);
+            return new PagedResult<ReturnedUserDto>
+            {
+                Items = _mapper.Map<List<ReturnedUserDto>>(users),
+                TotalRecords = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
-        public async Task<IEnumerable<ReturnedUserDto>> GetUsersByRoleAsync(string role)
+        public async Task<PagedResult<ReturnedUserDto>> GetUsersByRoleAsync(string role, int pageNumber, int pageSize)
         {
-            var users = await _userRepository.GetByRoleAsync(role);
-            return _mapper.Map<IEnumerable<ReturnedUserDto>>(users);
+            var (users, totalCount) = await _userRepository.GetByRoleAsync(role, pageNumber, pageSize);
+            return new PagedResult<ReturnedUserDto>
+            {
+                Items = _mapper.Map<List<ReturnedUserDto>>(users),
+                TotalRecords = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<ReturnedUserDto?> GetUserByIdAsync(Guid id)
@@ -207,11 +227,18 @@ namespace api.Application.Services
 
             return user.ProfilePic;
         }
-        public async Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync()
+        public async Task<PagedResult<ReturnedUserDto>> GetAllAdminsAsync(int pageNumber, int pageSize)
         {
-            var admins = await _userRepository.GetAllAdminsAsync();
-            return _mapper.Map<IEnumerable<ReturnedUserDto>>(admins);
+            var (admins, totalCount) = await _userRepository.GetAllAdminsAsync(pageNumber, pageSize);
+            return new PagedResult<ReturnedUserDto>
+            {
+                Items = _mapper.Map<List<ReturnedUserDto>>(admins),
+                TotalRecords = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
+
         public async Task<int> GetUsersCountAsync()
         {
             return await _userRepository.GetUsersCountAsync();
@@ -244,6 +271,5 @@ namespace api.Application.Services
             }
             else return result;
         }
-
     }
 }
