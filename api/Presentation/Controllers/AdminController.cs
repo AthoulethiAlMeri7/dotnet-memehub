@@ -10,7 +10,7 @@ namespace api.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize(Roles ="ROLE_ADMIN")]
     public class AdminsController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -21,6 +21,13 @@ namespace api.Presentation.Controllers
         }
 
         [HttpGet]
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllAdmins()
+        {
+            var admins = await _userService.GetAllAdminsAsync();
+            return Ok(admins);
+        }
+
+        [HttpGet("users")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
         {
             try
@@ -159,6 +166,30 @@ namespace api.Presentation.Controllers
                 return BadRequest(result.Errors);
             }
             return NoContent();
+        }
+        [HttpDelete("{id}/remove-role")]
+        public async Task<ActionResult> RemoveRole(Guid id, [FromBody] string role)
+        {
+            var result = await _userService.RemoveRoleAsync(id, role);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+            return NoContent();
+        }
+
+        [HttpGet("users-count")]
+        public async Task<ActionResult<int>> GetUsersCount()
+        {
+            var count = await _userService.GetUsersCountAsync();
+            return Ok(count);
+        }
+
+        [HttpGet("admins-count")]
+        public async Task<ActionResult<int>> GetAdminsCount()
+        {
+            var count = await _userService.GetAdminsCountAsync();
+            return Ok(count);
         }
     }
 }

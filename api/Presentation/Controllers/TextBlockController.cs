@@ -1,11 +1,14 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles ="ROLE_USER")]
+
     public class TextBlockController : ControllerBase
     {
         private readonly ITextBlockService _textBlockService;

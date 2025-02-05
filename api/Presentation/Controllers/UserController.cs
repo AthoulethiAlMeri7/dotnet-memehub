@@ -20,19 +20,6 @@ namespace api.Presentation.Controllers
             _userService = userService;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ReturnedUserDto>> CreateUser([FromForm] CreateUserDto createUserDto)
-        {
-            try
-            {
-                var createdUser = await _userService.CreateUserAsync(createUserDto);
-                return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
@@ -67,40 +54,6 @@ namespace api.Presentation.Controllers
             }
         }
 
-        [HttpGet("email/{email}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByEmail(string email)
-        {
-            try
-            {
-                var users = await _userService.GetUsersByEmailAsync(email);
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    Message = ex.Message
-                });
-            }
-        }
-
-        [HttpGet("role/{role}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByRole(string role)
-        {
-            try
-            {
-                var users = await _userService.GetUsersByRoleAsync(role);
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    Message = ex.Message
-                });
-            }
-        }
-
         [HttpGet("search/{search}")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
         {
@@ -118,53 +71,19 @@ namespace api.Presentation.Controllers
             }
         }
 
-        [HttpGet("username/{userName}")]
-        public async Task<ActionResult<ReturnedUserDto>> GetUserByUserName(string userName)
+        [HttpPut]
+        public async Task<ActionResult<ReturnedUserDto>> UpdateUser([FromForm] UpdateUserDto updateUserDto)
         {
-            try
-            {
-                var user = await _userService.GetUserByUserNameAsync(userName);
-                if (user == null)
-                {
-                    return NotFound();
-                }
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ReturnedUserDto>> UpdateUser(Guid id, [FromForm] UpdateUserDto updateUserDto)
-        {
-            try
-            {
-                var result = await _userService.UpdateUserAsync(id, updateUserDto);
-                if (!result.Succeeded)
-                {
-                    return BadRequest(result.Errors);
-                }
-                var updatedUser = await _userService.GetUserByIdAsync(id);
-                return Ok(updatedUser);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteUser(Guid id)
-        {
-            var result = await _userService.DeleteUserAsync(id);
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var result = await _userService.UpdateUserAsync(currentUser.Id, updateUserDto);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
             }
-            return NoContent();
+            var updatedUser = await _userService.GetUserByIdAsync(currentUser.Id);
+            return Ok(updatedUser);
         }
+
 
         [HttpPost("{id}/upload-profile-picture")]
         [Consumes("multipart/form-data")]
@@ -184,26 +103,7 @@ namespace api.Presentation.Controllers
             }
         }
 
-        [HttpPost("{id}/add-role")]
-        public async Task<ActionResult> AddRole(Guid id, [FromBody] string role)
-        {
-            try
-            {
-                var result = await _userService.AddRoleAsync(id, role);
-                if (!result.Succeeded)
-                {
-                    return BadRequest(result.Errors);
-                }
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    Message = ex.Message
-                });
-            }
-        }
+
 
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail(Guid userId)

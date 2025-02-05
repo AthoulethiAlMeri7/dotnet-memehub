@@ -1,9 +1,9 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
-using API.Application.Dtos;
 using API.Domain.Interfaces;
 using API.Domain.Models;
 using AutoMapper;
+using api.Application.Dtos.UserDtos;
 
 namespace api.Application.Services
 {
@@ -18,7 +18,7 @@ namespace api.Application.Services
             _memeRepository = memeRepository;
             _mapper = mapper;
         }
-        public async Task<MemeDto> CreateMemeAsync(UserDto user, CreateMemeDto createMemeDto)
+        public async Task<MemeDto> CreateMemeAsync(ReturnedUserDto user, CreateMemeDto createMemeDto)
         {
             try
             {
