@@ -114,15 +114,12 @@ namespace api.Application.Services
                 updateUserDto.Email = user.Email;
             }
 
-            // if (!string.IsNullOrWhiteSpace(updateUserDto.Password))
-            // {
-            //     var passwordHasher = new PasswordHasher<ApplicationUser>();
-            //     user.PasswordHash = passwordHasher.HashPassword(user, updateUserDto.Password);
-            // }
+            if (updateUserDto.ProfilePicture != null)
+            {
+                user.ProfilePic = await UploadFileAsync(updateUserDto.ProfilePicture);
+            }
 
             _mapper.Map(updateUserDto, user);
-            await _userRepository.UpdateAsync(user);
-
             return await _userRepository.UpdateAsync(user);
         }
 
@@ -154,7 +151,7 @@ namespace api.Application.Services
             if (user == null) throw new Exception("User not found");
 
             user.ProfilePic = await UploadFileAsync(ppDto.ProfilePicture);
-            await _userRepository.UpdateAsync(user);
+            var updatedUser = await _userRepository.UpdateAsync(user);
 
             return user.ProfilePic;
         }
