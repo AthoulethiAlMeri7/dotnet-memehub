@@ -60,5 +60,16 @@ namespace api.Presentation.Controllers
             return Ok(profilePicUrl);
         }
 
+
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail(Guid userId)
+        {
+            var result = await _userService.VerifyEmailAsync(userId);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+            return Ok("Email verified successfully.");
+        }
     }
 }

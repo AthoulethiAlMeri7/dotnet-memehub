@@ -29,14 +29,19 @@ namespace API.Presentation.Controllers
                 });
             }
 
-            var result = await _authService.RegisterAsync(userDetails);
-
-            if (result == "User registered successfully.")
+            try
             {
-                return Ok(result);
+                var result = await _authService.RegisterAsync(userDetails);
+
+                return Ok(new { Token = result });
+
+            }
+            catch
+            {
+                return BadRequest(new { Message = "error while registring user" });
             }
 
-            return BadRequest(new { Message = result });
+
         }
 
         [HttpPost("login")]

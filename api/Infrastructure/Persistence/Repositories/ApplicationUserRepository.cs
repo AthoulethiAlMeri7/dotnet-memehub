@@ -61,7 +61,7 @@ namespace api.Infrastructure.Persistence.Repositories
         }
 
 
-        
+
 
         public async Task<IdentityResult> UpdateAsync(ApplicationUser updatedUser)
         {
@@ -148,6 +148,16 @@ namespace api.Infrastructure.Persistence.Repositories
         {
             var admins = await _userManager.GetUsersInRoleAsync("ROLE_ADMIN");
             return admins.Count(u => !u.IsDeleted); // Count only non-deleted users
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(ApplicationUser user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
 
     }
