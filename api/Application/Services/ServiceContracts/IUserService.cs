@@ -4,12 +4,13 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using api.Application.Dtos.UserDtos;
+using API.Application.Dtos;
 
 namespace api.Application.Services.ServiceContracts
 {
     public interface IUserService
     {
-        Task<ReturnedUserDto?> GetCurrentUserAsync();
+        Task<UserDto?> GetCurrentUserAsync();
         Task<ReturnedUserDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<IEnumerable<ReturnedUserDto>> GetAllUsersAsync();
         Task<IEnumerable<ReturnedUserDto>> GetUsersByEmailAsync(string email);
@@ -22,8 +23,6 @@ namespace api.Application.Services.ServiceContracts
         Task<IdentityResult> AddRoleAsync(Guid id, string role);
         Task<IdentityResult> RemoveRoleAsync(Guid id, string role);
         Task<string> UploadProfilePictureAsync(Guid userId, UploadProfilePictureDto uploadProfilePictureDto);
-        Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync();
-        Task<int> GetUsersCountAsync();
-        Task<int> GetAdminsCountAsync();
+        Task<IdentityResult> VerifyEmailAsync(Guid userId);
     }
 }

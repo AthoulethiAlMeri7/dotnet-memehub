@@ -61,7 +61,7 @@ namespace api.Infrastructure.Persistence.Repositories
         }
 
 
-        
+
 
         public async Task<IdentityResult> UpdateAsync(ApplicationUser updatedUser)
         {
@@ -134,6 +134,16 @@ namespace api.Infrastructure.Persistence.Repositories
             var users = await _userManager.GetUsersInRoleAsync(role);
             await PopulateRolesAsync(users);
             return users;
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(ApplicationUser user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
 
     }
