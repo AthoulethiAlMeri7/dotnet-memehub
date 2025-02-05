@@ -1,6 +1,7 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Presentation.Controllers
 {
@@ -43,6 +44,8 @@ namespace API.Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles ="ROLE_ADMIN")]
+
         public async Task<IActionResult> CreateTemplate([FromBody] CreateTemplateDto templateDto)
         {
             try
@@ -57,6 +60,8 @@ namespace API.Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles ="ROLE_ADMIN")]
+
         public async Task<IActionResult> UpdateTemplate(Guid id, [FromBody] UpdateTemplateDto templateDto)
         {
             try
@@ -71,6 +76,8 @@ namespace API.Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles ="ROLE_ADMIN")]
+
         public async Task<IActionResult> DeleteTemplate(Guid id)
         {
             try

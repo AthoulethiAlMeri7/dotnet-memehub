@@ -24,15 +24,17 @@ namespace api.Application.Services
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMemeService _memeService;
         private readonly IEmailService _emailService;
-
-        public UserService(IApplicationUserRepository userRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
+        
+        public UserService(IApplicationUserRepository userRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IMemeService memeService)
         {
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _mapper = mapper;
             _env = webHostEnvironment;
+            _memeService = memeService;
         }
 
         private async Task<string> UploadFileAsync(IFormFile file)
@@ -155,10 +157,29 @@ namespace api.Application.Services
             return await _userRepository.UpdateAsync(user);
         }
 
-        public async Task<IdentityResult> DeleteUserAsync(Guid id)
+        public async Task<IdentityResult> DeleteUserAsync(Guid userId)
         {
-            return await _userRepository.DeleteAsync(id);
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+            }
+
+            // Get all memes by user
+            var memes = await _memeService.GetMemesByUserIdAsync(userId, 1, int.MaxValue);
+            
+            // Delete all memes
+            foreach (var meme in memes.Items)
+            {
+                await _memeService.DeleteMemeAsync(meme.Id);
+            }
+
+            // Delete the user
+            var result = await _userRepository.DeleteAsync(userId);
+            
+            return result;
         }
+
 
         public async Task<IdentityResult> AddRoleAsync(Guid id, string role)
         {
@@ -187,7 +208,16 @@ namespace api.Application.Services
 
             return user.ProfilePic;
         }
-
+        public async Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync(){
+            var admins = await _userRepository.GetAllAdminsAsync();
+            return _mapper.Map<IEnumerable<ReturnedUserDto>>(admins);
+        }
+        public async Task<int> GetUsersCountAsync(){
+            return await _userRepository.GetUsersCountAsync();
+        }
+        public async Task<int> GetAdminsCountAsync(){
+            return await _userRepository.GetAdminsCountAsync();
+        }
 
 
         private async Task SendVerificationEmailAsync(ApplicationUser user)

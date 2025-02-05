@@ -1,15 +1,16 @@
 using api.Application.Dtos;
 using api.Application.Services.ServiceContracts;
-using API.Application.Dtos;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
+using api.Application.Dtos.UserDtos;
 
 namespace API.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "ROLE_GUEST")]
     public class MemeController : ControllerBase
     {
         private readonly IValidator<CreateMemeDto> _validator;
@@ -52,11 +53,6 @@ namespace API.Presentation.Controllers
             }
         }
 
-        private async Task<UserDto> GetCurrentUser()
-        {
-            var user = await _userService.GetCurrentUserAsync();
-            return user;
-        }
 
         private async Task<List<TextBlockDto>> CreateTextBlocks(List<CreateTextBlockDto> textBlocks, Guid memeId)
         {
@@ -76,11 +72,13 @@ namespace API.Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles ="ROLE_USER")]
+
         public async Task<IActionResult> CreateMeme([FromBody] CreateMemeRequestDto memeRequestDto)
         {
             try
             {
-                var user = await this.GetCurrentUser();
+                var user = await _userService.GetCurrentUserAsync();
                 if (user == null) return Unauthorized();
 
                 var validationResult = await _validator.ValidateAsync(memeRequestDto.Meme);
@@ -105,6 +103,8 @@ namespace API.Presentation.Controllers
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles ="ROLE_USER")]
+
         public async Task<IActionResult> UpdateMeme(Guid id, [FromBody] UpdateMemeRequestDto memeDto)
         {
             try
@@ -130,6 +130,8 @@ namespace API.Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles ="ROLE_USER")]
+
         public async Task<IActionResult> DeleteMeme(Guid id)
         {
             try
@@ -147,6 +149,8 @@ namespace API.Presentation.Controllers
         }
 
         [HttpGet("user/{userId}")]
+        [Authorize(Roles ="ROLE_USER")]
+
         public async Task<IActionResult> GetMemesByUserId(Guid userId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
