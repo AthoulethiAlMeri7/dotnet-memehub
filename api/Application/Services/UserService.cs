@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using api.Application.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
-using API.Application.Dtos;
 
 namespace api.Application.Services
 {
@@ -26,7 +25,7 @@ namespace api.Application.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMemeService _memeService;
         private readonly IEmailService _emailService;
-        
+
         public UserService(IApplicationUserRepository userRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IMemeService memeService)
         {
             _emailService = emailService;
@@ -73,7 +72,7 @@ namespace api.Application.Services
             return _mapper.Map<ReturnedUserDto>(userWithId);
         }
 
-        public async Task<UserDto?> GetCurrentUserAsync()
+        public async Task<ReturnedUserDto?> GetCurrentUserAsync()
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -85,7 +84,7 @@ namespace api.Application.Services
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return null;
 
-            var response = new UserDto
+            var response = new ReturnedUserDto
             {
                 Id = user.Id,
                 UserName = user.UserName,
@@ -167,7 +166,7 @@ namespace api.Application.Services
 
             // Get all memes by user
             var memes = await _memeService.GetMemesByUserIdAsync(userId, 1, int.MaxValue);
-            
+
             // Delete all memes
             foreach (var meme in memes.Items)
             {
@@ -176,7 +175,7 @@ namespace api.Application.Services
 
             // Delete the user
             var result = await _userRepository.DeleteAsync(userId);
-            
+
             return result;
         }
 
@@ -208,14 +207,17 @@ namespace api.Application.Services
 
             return user.ProfilePic;
         }
-        public async Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync(){
+        public async Task<IEnumerable<ReturnedUserDto>> GetAllAdminsAsync()
+        {
             var admins = await _userRepository.GetAllAdminsAsync();
             return _mapper.Map<IEnumerable<ReturnedUserDto>>(admins);
         }
-        public async Task<int> GetUsersCountAsync(){
+        public async Task<int> GetUsersCountAsync()
+        {
             return await _userRepository.GetUsersCountAsync();
         }
-        public async Task<int> GetAdminsCountAsync(){
+        public async Task<int> GetAdminsCountAsync()
+        {
             return await _userRepository.GetAdminsCountAsync();
         }
 
