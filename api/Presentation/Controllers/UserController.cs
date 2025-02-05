@@ -10,7 +10,7 @@ namespace api.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -20,19 +20,6 @@ namespace api.Presentation.Controllers
             _userService = userService;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ReturnedUserDto>> CreateUser([FromForm] CreateUserDto createUserDto)
-        {
-            var createdUser = await _userService.CreateUserAsync(createUserDto);
-            return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
-        {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
-        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ReturnedUserDto>> GetUserById(Guid id)
@@ -44,21 +31,6 @@ namespace api.Presentation.Controllers
             }
             return Ok(user);
         }
-
-        [HttpGet("email/{email}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByEmail(string email)
-        {
-            var users = await _userService.GetUsersByEmailAsync(email);
-            return Ok(users);
-        }
-
-        [HttpGet("role/{role}")]
-        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByRole(string role)
-        {
-            var users = await _userService.GetUsersByRoleAsync(role);
-            return Ok(users);
-        }
-
         [HttpGet("search/{search}")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
         {
@@ -66,39 +38,19 @@ namespace api.Presentation.Controllers
             return Ok(users);
         }
 
-        [HttpGet("username/{userName}")]
-        public async Task<ActionResult<ReturnedUserDto>> GetUserByUserName(string userName)
+        [HttpPut]
+        public async Task<ActionResult<ReturnedUserDto>> UpdateUser([FromForm] UpdateUserDto updateUserDto)
         {
-            var user = await _userService.GetUserByUserNameAsync(userName);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ReturnedUserDto>> UpdateUser(Guid id, [FromForm] UpdateUserDto updateUserDto)
-        {
-            var result = await _userService.UpdateUserAsync(id, updateUserDto);
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var result = await _userService.UpdateUserAsync(currentUser.Id, updateUserDto);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
             }
-            var updatedUser = await _userService.GetUserByIdAsync(id);
+            var updatedUser = await _userService.GetUserByIdAsync(currentUser.Id);
             return Ok(updatedUser);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteUser(Guid id)
-        {
-            var result = await _userService.DeleteUserAsync(id);
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
-            }
-            return NoContent();
-        }
 
         [HttpPost("{id}/upload-profile-picture")]
         [Consumes("multipart/form-data")]
@@ -108,15 +60,5 @@ namespace api.Presentation.Controllers
             return Ok(profilePicUrl);
         }
 
-        [HttpPost("{id}/add-role")]
-        public async Task<ActionResult> AddRole(Guid id, [FromBody] string role)
-        {
-            var result = await _userService.AddRoleAsync(id, role);
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
-            }
-            return NoContent();
-        }
     }
 }

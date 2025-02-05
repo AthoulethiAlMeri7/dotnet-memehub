@@ -135,6 +135,20 @@ namespace api.Infrastructure.Persistence.Repositories
             await PopulateRolesAsync(users);
             return users;
         }
+        public async Task<IEnumerable<ApplicationUser>> GetAllAdminsAsync()
+        {
+            var users = await _userManager.GetUsersInRoleAsync("ROLE_ADMIN"); 
+            return users.Where(u => !u.IsDeleted).ToList();
+        }
+
+        public async Task<int> GetUsersCountAsync(){
+            return await _userManager.Users.CountAsync(u => u.IsDeleted == false);
+        }
+        public async Task<int> GetAdminsCountAsync()
+        {
+            var admins = await _userManager.GetUsersInRoleAsync("ROLE_ADMIN");
+            return admins.Count(u => !u.IsDeleted); // Count only non-deleted users
+        }
 
     }
 }
