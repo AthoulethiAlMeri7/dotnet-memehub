@@ -30,51 +30,93 @@ namespace api.Presentation.Controllers
         [HttpGet("users")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ReturnedUserDto>> GetUserById(Guid id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                return Ok(user);
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet("email/{email}")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByEmail(string email)
         {
-            var users = await _userService.GetUsersByEmailAsync(email);
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetUsersByEmailAsync(email);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet("role/{role}")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetUsersByRole(string role)
         {
-            var users = await _userService.GetUsersByRoleAsync(role);
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetUsersByRoleAsync(role);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet("search/{search}")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
         {
-            var users = await _userService.SearchUsersAsync(search);
-            return Ok(users);
+            try
+            {
+                var users = await _userService.SearchUsersAsync(search);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet("username/{userName}")]
         public async Task<ActionResult<ReturnedUserDto>> GetUserByUserName(string userName)
         {
-            var user = await _userService.GetUserByUserNameAsync(userName);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.GetUserByUserNameAsync(userName);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                return Ok(user);
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
@@ -104,8 +146,15 @@ namespace api.Presentation.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<string>> UploadProfilePicture(Guid id, UploadProfilePictureDto uploadProfilePictureDto)
         {
-            var profilePicUrl = await _userService.UploadProfilePictureAsync(id, uploadProfilePictureDto);
-            return Ok(profilePicUrl);
+            try
+            {
+                var profilePicUrl = await _userService.UploadProfilePictureAsync(id, uploadProfilePictureDto);
+                return Ok(profilePicUrl);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpPost("{id}/add-role")]

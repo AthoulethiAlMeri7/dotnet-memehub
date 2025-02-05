@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using api.Application.Dtos.AuthDtos;
+using api.Application.Exceptions;
 using api.Application.Interfaces;
 using api.Application.Services.ServiceContracts;
 using api.Infrastructure.Config;
@@ -42,25 +43,36 @@ namespace api.Application.Services
 
         public async Task<string> RegisterAsync(RegisterDto userDetails)
         {
-            var user = _mapper.Map<ApplicationUser>(userDetails);
-
-
-            var result = await _userRepository.AddAsync(user, userDetails.Password);
-
-            if (result != null)
+            try
             {
-                var verificationUrl = $"http://localhost:5145//api/users/verify-email?userId={user.Id}";
-                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Infrastructure", "Services", "MailingService", "Templates", "VerificationTemplate.html");
-                await _emailService.SendEmailAsync(userDetails.Email, "Email Verification", templatePath, verificationUrl);
-                var token = await LoginAsync(new LoginDto { Username = userDetails.Username, Password = userDetails.Password });
-                if (token != null)
-                {
-                    return token;
-                }
-                return "Registered Successfully ! Please check your mail to start the Meme War !";
-            }
+                var user = _mapper.Map<ApplicationUser>(userDetails);
+                var result = await _userRepository.AddAsync(user, userDetails.Password);
 
-            else throw new Exception("User registration failed.");
+                if (result != null)
+                {
+                    var verificationUrl = $"http://localhost:5145/api/users/verify-email?userId={user.Id}";
+
+                    var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Infrastructure", "Services", "MailingService", "Templates", "VerificationTemplate.html");
+
+                    await _emailService.SendEmailAsync(userDetails.Email, "Email Verification", templatePath, verificationUrl);
+
+                    var token = await LoginAsync(new LoginDto { Username = userDetails.Username, Password = userDetails.Password });
+
+                    if (token != null)
+                    {
+                        return token;
+                    }
+                    return "Registered Successfully! Please check your mail to start the Meme War!";
+                }
+                else
+                {
+                    throw new RegistrationFailedException("User registration failed.");
+                }
+            }
+            catch
+            {
+                throw new RegistrationFailedException("An error occurred during registration.");
+            }
         }
 
         private async Task<string> GenerateToken(ApplicationUser applicationUser)
@@ -85,7 +97,6 @@ namespace api.Application.Services
                 new Claim(ClaimTypes.Email, applicationUser.Email)
             };
 
-            // Add user roles to claims
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
@@ -107,22 +118,38 @@ namespace api.Application.Services
 
         public async Task<string> LoginAsync(LoginDto model)
         {
-            var user = await _userRepository.GetByUserNameAsync(model.Username);
-            if (user != null && await _userRepository.CheckPasswordAsync(user, model.Password) && !user.IsDeleted)
+            try
             {
+
+                var user = await _userRepository.GetByUserNameAsync(model.Username);
+                if (user == null || !await _userRepository.CheckPasswordAsync(user, model.Password))
+                {
+                    throw new InvalidCredentialsException("Invalid username or password.");
+                }
                 var token = await GenerateToken(user);
                 return token;
             }
-
-            throw new Exception("Invalid username or password.");
+            catch
+            {
+                throw new InvalidCredentialsException("An error occurred during login.");
+            }
         }
 
 
         public async Task<string> LogoutAsync(string token)
         {
-            await _tokenRevocationService.RevokeTokenAsync(token);
-            return "Logout successful.";
+            try
+            {
+                await _tokenRevocationService.RevokeTokenAsync(token);
+                return "Logout successful.";
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if needed
+                throw new Exception("An error occurred during logout.", ex);
+            }
         }
+
 
     }
 }

@@ -21,21 +21,54 @@ namespace api.Presentation.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ReturnedUserDto>> GetUserById(Guid id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound();
+
+                var user = await _userService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                return Ok(user);
             }
-            return Ok(user);
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
+
         [HttpGet("search/{search}")]
         public async Task<ActionResult<IEnumerable<ReturnedUserDto>>> SearchUsers(string search)
         {
-            var users = await _userService.SearchUsersAsync(search);
-            return Ok(users);
+            try
+            {
+                var users = await _userService.SearchUsersAsync(search);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Message = ex.Message
+                });
+            }
         }
 
         [HttpPut]
@@ -56,20 +89,38 @@ namespace api.Presentation.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<string>> UploadProfilePicture(Guid id, UploadProfilePictureDto uploadProfilePictureDto)
         {
-            var profilePicUrl = await _userService.UploadProfilePictureAsync(id, uploadProfilePictureDto);
-            return Ok(profilePicUrl);
+            try
+            {
+                var profilePicUrl = await _userService.UploadProfilePictureAsync(id, uploadProfilePictureDto);
+                return Ok(profilePicUrl);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Message = ex.Message
+                });
+            }
         }
+
 
 
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail(Guid userId)
         {
-            var result = await _userService.VerifyEmailAsync(userId);
-            if (!result.Succeeded)
+            try
             {
-                return BadRequest(result.Errors);
+                var result = await _userService.VerifyEmailAsync(userId);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+                return Ok("Email verified successfully.");
             }
-            return Ok("Email verified successfully.");
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 }

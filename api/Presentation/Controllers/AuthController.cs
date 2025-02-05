@@ -1,4 +1,5 @@
 using api.Application.Dtos.AuthDtos;
+using api.Application.Exceptions;
 using api.Application.Services.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +37,10 @@ namespace API.Presentation.Controllers
                 return Ok(new { Token = result });
 
             }
-            catch
+            catch (Exception ex)
             {
-                return BadRequest(new { Message = "error while registring user" });
+                return BadRequest(new { Message = ex.Message });
             }
-
-
         }
 
         [HttpPost("login")]
@@ -67,9 +66,16 @@ namespace API.Presentation.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var result = await _authService.LogoutAsync(token);
-            return Ok(result);
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var result = await _authService.LogoutAsync(token);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
 
