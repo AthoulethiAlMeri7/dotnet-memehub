@@ -42,7 +42,7 @@ namespace api.Application.Services
 
             var result = await _userRepository.AddAsync(user, userDetails.Password);
 
-            if (result.Succeeded)
+            if (result != null)
             {
                 return "User registered successfully.";
             }

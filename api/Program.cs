@@ -20,9 +20,11 @@ using System.Text.Json.Serialization;
 using api.Application.validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using api.Presentation.SwaggerConfig;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -33,7 +35,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Enter 'Bearer' [space] and then your token.",
+        Description = "Enter your token.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -55,7 +57,10 @@ builder.Services.AddSwaggerGen(c =>
             new List<string>()
         }
     });
+
+    c.OperationFilter<FileUploadOperationFilter>();
 });
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     {
         // Configure password options

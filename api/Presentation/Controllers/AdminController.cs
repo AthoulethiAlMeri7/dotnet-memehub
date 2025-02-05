@@ -11,20 +11,13 @@ namespace api.Presentation.Controllers
     [Route("api/[controller]")]
     [ApiController]
     // [Authorize]
-    public class UsersController : ControllerBase
+    public class AdminsController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public UsersController(IUserService userService)
+        public AdminsController(IUserService userService)
         {
             _userService = userService;
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<ReturnedUserDto>> CreateUser([FromForm] CreateUserDto createUserDto)
-        {
-            var createdUser = await _userService.CreateUserAsync(createUserDto);
-            return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
         }
 
         [HttpGet]

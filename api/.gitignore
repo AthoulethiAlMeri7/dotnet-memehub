@@ -65,3 +65,6 @@ Thumbs.db
 *.db-shm
 *.db-wal
 *.db
+
+# imgs
+wwwroot/uploads/
