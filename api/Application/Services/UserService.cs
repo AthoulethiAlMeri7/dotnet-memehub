@@ -202,6 +202,8 @@ namespace api.Application.Services
 
         public async Task<IdentityResult> AddRoleAsync(Guid id, string role)
         {
+            var roles = new List<string> { "ROLE_USER", "ROLE_ADMIN", "ROLE_GUEST" };
+            if (role == null || !roles.Contains(role)) throw new Exception("Invalid role");
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) throw new Exception("User not found");
             return await _userRepository.AddRoleAsync(user, role);
